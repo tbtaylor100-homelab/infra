@@ -20,6 +20,27 @@ resource "proxmox_virtual_environment_download_file" "cloud_image" {
   overwrite_unmanaged = true
 }
 
+# Cloud-init vendor-data: installs qemu-guest-agent on first boot.
+# vendor_data_file_id is additive — it does not replace the provider-generated
+# user-data that handles SSH key injection via the user_account block.
+resource "proxmox_virtual_environment_file" "vendor_data" {
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = var.node
+
+  source_raw {
+    file_name = "${var.name}-vendor-data.yaml"
+    data      = <<-EOF
+      #cloud-config
+      packages:
+        - qemu-guest-agent
+      runcmd:
+        - systemctl enable qemu-guest-agent
+        - systemctl start qemu-guest-agent
+      EOF
+  }
+}
+
 resource "proxmox_virtual_environment_vm" "vm" {
   vm_id     = var.vm_id
   name      = var.name
@@ -62,6 +83,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
 
   # Cloud-init configuration
   initialization {
+    vendor_data_file_id = proxmox_virtual_environment_file.vendor_data.id
+
     ip_config {
       ipv4 {
         address = var.ip_address
@@ -86,5 +109,8 @@ resource "proxmox_virtual_environment_vm" "vm" {
     ]
   }
 
-  depends_on = [proxmox_virtual_environment_download_file.cloud_image]
+  depends_on = [
+    proxmox_virtual_environment_download_file.cloud_image,
+    proxmox_virtual_environment_file.vendor_data,
+  ]
 }

@@ -36,7 +36,7 @@ module "k3s_vm" {
   memory_mb    = 8192
   disk_size_gb = 60
   storage_pool = "Intel660P"
-  ip_address   = "192.168.1.50/24"
+  ip_address   = "192.168.1.60/24"
   gateway      = "192.168.1.1"
   dns_server   = "1.1.1.1"
 
@@ -50,7 +50,8 @@ output "vm_id" {
 }
 
 output "ip_address" {
-  value = module.k3s_vm.ip_address
+  description = "k3s-control-01 static IP (192.168.1.60 — separate from Forgejo at .50)"
+  value       = module.k3s_vm.ip_address
 }
 
 output "mac_address" {
