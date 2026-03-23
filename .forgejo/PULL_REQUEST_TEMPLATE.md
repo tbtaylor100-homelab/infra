@@ -6,6 +6,14 @@
 
 <!-- Why is this change needed? Link to the JIRA story if applicable. -->
 
+## Key decisions
+
+<!-- Any tool choices, provider selections, or architectural decisions made in this PR.
+     For each: what did you choose, what were the alternatives, and why this one?
+     Example:
+       - Using bpg/proxmox over Telmate/proxmox: bpg is actively maintained and has
+         reliable cloud-init support; Telmate has known bugs with cloud-init networking. -->
+
 ## Type of change
 
 - [ ] OpenTofu (VM provisioning)
