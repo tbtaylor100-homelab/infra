@@ -7,14 +7,17 @@ terraform {
   }
 }
 
-# Upload the cloud image as a base disk image if not already present
+# Adopt the cloud image if already present, or download it if not.
+# overwrite_unmanaged = true allows OpenTofu to take ownership of a file
+# that was downloaded outside of OpenTofu (e.g. manually in Phase 0).
 resource "proxmox_virtual_environment_download_file" "cloud_image" {
-  content_type = "iso"
-  datastore_id = "local"
-  node_name    = var.node
-  url          = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
-  file_name    = "noble-server-cloudimg-amd64.img"
-  overwrite    = false
+  content_type        = "iso"
+  datastore_id        = "local"
+  node_name           = var.node
+  url                 = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
+  file_name           = "noble-server-cloudimg-amd64.img"
+  overwrite           = false
+  overwrite_unmanaged = true
 }
 
 resource "proxmox_virtual_environment_vm" "vm" {
