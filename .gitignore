@@ -2,6 +2,7 @@
 **/.terraform/
 *.tfstate
 *.tfstate.backup
+*.tfstate.*.backup
 *.tfstate.lock.info
 .terraform.lock.hcl
 *.tfvars.secrets
