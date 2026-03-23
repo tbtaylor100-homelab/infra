@@ -49,14 +49,6 @@ resource "proxmox_virtual_environment_vm" "vm" {
     iothread     = true
   }
 
-  # Cloud-init drive
-  disk {
-    datastore_id = var.storage_pool
-    interface    = "ide2"
-    file_format  = "raw"
-    size         = 4
-  }
-
   network_device {
     bridge = "vmbr0"
     model  = "virtio"
