@@ -14,9 +14,17 @@ terraform {
 }
 
 provider "proxmox" {
-  endpoint = var.proxmox_endpoint
+  endpoint  = var.proxmox_endpoint
   api_token = var.proxmox_api_token
   insecure  = true # self-signed cert on pve
+
+  # SSH is required by bpg/proxmox for disk operations (e.g. cloning cloud images).
+  # Run: ssh-copy-id -i ~/.ssh/id_ed25519.pub root@192.168.1.12
+  ssh {
+    agent       = true
+    username    = "root"
+    private_key = file("~/.ssh/id_ed25519")
+  }
 }
 
 module "k3s_vm" {
