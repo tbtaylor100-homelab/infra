@@ -81,7 +81,7 @@
   become: true
 
 - name: Start Uptime Kuma
-  ansible.builtin.shell:
+  ansible.builtin.command:
     cmd: docker compose up -d
     chdir: /opt/uptime-kuma
   changed_when: false
