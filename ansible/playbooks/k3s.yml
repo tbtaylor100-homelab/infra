@@ -1,0 +1,8 @@
+---
+- name: Configure k3s-control-01
+  hosts: k3s
+  gather_facts: true
+
+  roles:
+    - role: base
+    - role: k3s

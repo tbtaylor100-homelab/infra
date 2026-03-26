@@ -1,0 +1,36 @@
+---
+- name: Download K3s install script
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s-install.sh
+    mode: '0755'
+
+- name: Install K3s (disable Traefik — we choose our own ingress later)
+  command: /tmp/k3s-install.sh
+  environment:
+    INSTALL_K3S_EXEC: "server --disable traefik"
+  args:
+    creates: /usr/local/bin/k3s
+  become: true
+
+- name: Wait for K3s node to be Ready
+  command: k3s kubectl get nodes
+  register: nodes_output
+  until: "'Ready' in nodes_output.stdout"
+  retries: 20
+  delay: 10
+  become: true
+
+- name: Fetch kubeconfig to operator Mac
+  fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: ~/.kube/k3s-homelab.yaml
+    flat: true
+  become: true
+
+- name: Replace localhost with k3s-control-01 IP in kubeconfig
+  delegate_to: localhost
+  replace:
+    path: ~/.kube/k3s-homelab.yaml
+    regexp: 'https://127\.0\.0\.1:6443'
+    replace: 'https://192.168.1.60:6443'
