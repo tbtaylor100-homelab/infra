@@ -11,9 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install ansible-lint
-        run: pipx install ansible-lint
-
       - name: Run ansible-lint
         working-directory: ansible
-        run: ansible-lint playbooks/
+        run: pipx run ansible-lint playbooks/
