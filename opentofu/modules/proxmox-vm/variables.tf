@@ -66,6 +66,13 @@ variable "ssh_public_key" {
   type        = string
 }
 
+variable "vm_password" {
+  description = "Password for the default user — enables password SSH auth from any LAN device"
+  type        = string
+  default     = null
+  sensitive   = true
+}
+
 variable "tags" {
   description = "List of Proxmox tags to apply to the VM"
   type        = list(string)

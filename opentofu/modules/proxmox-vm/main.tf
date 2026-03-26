@@ -32,6 +32,7 @@ resource "proxmox_virtual_environment_file" "vendor_data" {
     file_name = "${var.name}-vendor-data.yaml"
     data      = <<-EOF
       #cloud-config
+      ssh_pwauth: true
       packages:
         - qemu-guest-agent
       runcmd:
@@ -61,11 +62,13 @@ resource "proxmox_virtual_environment_vm" "vm" {
   }
 
   # Boot disk — cloned from the cloud image
+  # file_format = "raw" is required for LVM storage (Intel660P); LVM does not support qcow2
   disk {
     datastore_id = var.storage_pool
     file_id      = proxmox_virtual_environment_download_file.cloud_image.id
     interface    = "virtio0"
     size         = var.disk_size_gb
+    file_format  = "raw"
     discard      = "on"
     iothread     = true
   }
@@ -99,6 +102,7 @@ resource "proxmox_virtual_environment_vm" "vm" {
     user_account {
       username = "ubuntu"
       keys     = [var.ssh_public_key]
+      password = var.vm_password
     }
   }
 
