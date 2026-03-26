@@ -1,0 +1,42 @@
+# NOTE: This workflow requires the OpenTofu state backend to be migrated to MinIO (MAHHAUS-50).
+# Until then, tofu apply must be run locally. The fmt/validate/plan workflow (tofu-plan.yml)
+# works today without remote state.
+name: OpenTofu Apply
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'opentofu/**'
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.9.0"
+
+      - name: tofu init
+        working-directory: opentofu/stacks/k3s
+        run: tofu init -backend=false
+        env:
+          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+
+      - name: tofu apply
+        working-directory: opentofu/stacks/k3s
+        run: tofu apply -auto-approve -no-color
+        env:
+          TF_VAR_proxmox_endpoint: ${{ secrets.PROXMOX_ENDPOINT }}
+          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+
+      - name: Verify k3s node is Ready
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ubuntu@192.168.1.60 \
+            "sudo k3s kubectl get nodes"

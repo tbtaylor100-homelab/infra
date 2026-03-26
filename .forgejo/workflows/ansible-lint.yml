@@ -1,0 +1,19 @@
+name: Ansible Lint
+
+on:
+  pull_request:
+    paths:
+      - 'ansible/**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+
+      - name: Run ansible-lint
+        working-directory: ansible
+        run: ansible-lint playbooks/
