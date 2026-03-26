@@ -1,0 +1,36 @@
+---
+- name: Update apt cache and upgrade packages
+  apt:
+    update_cache: true
+    upgrade: dist
+    cache_valid_time: 3600
+  become: true
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ timezone }}"
+  become: true
+
+- name: Disable SSH password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  become: true
+  notify: Restart sshd
+
+- name: Enable unattended security upgrades
+  apt:
+    name: unattended-upgrades
+    state: present
+  become: true
+
+- name: Configure unattended-upgrades
+  copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    mode: '0644'
+  become: true
