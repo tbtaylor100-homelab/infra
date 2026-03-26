@@ -1,7 +1,7 @@
 ---
 # --- Helm ---
 - name: Install Helm
-  shell: |
+  ansible.builtin.shell: |
     curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
   args:
     creates: /usr/local/bin/helm
@@ -9,29 +9,32 @@
 
 # --- MetalLB ---
 - name: Add MetalLB Helm repo
-  command: helm repo add metallb https://metallb.github.io/metallb
+  ansible.builtin.command: helm repo add metallb https://metallb.github.io/metallb
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   become: true
 
 - name: Update Helm repos
-  command: helm repo update
+  ansible.builtin.command: helm repo update
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   become: true
 
 - name: Install MetalLB
-  command: >
+  ansible.builtin.command: >
     helm upgrade --install metallb metallb/metallb
     --namespace metallb-system
     --create-namespace
     --wait
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   become: true
 
 - name: Configure MetalLB IP pool
-  copy:
+  ansible.builtin.copy:
     dest: /tmp/metallb-pool.yaml
     content: |
       apiVersion: metallb.io/v1beta1
@@ -50,24 +53,27 @@
         namespace: metallb-system
 
 - name: Apply MetalLB IP pool
-  command: k3s kubectl apply -f /tmp/metallb-pool.yaml
+  ansible.builtin.command: k3s kubectl apply -f /tmp/metallb-pool.yaml
+  changed_when: false
   become: true
 
 # --- ArgoCD ---
 - name: Add ArgoCD Helm repo
-  command: helm repo add argo https://argoproj.github.io/argo-helm
+  ansible.builtin.command: helm repo add argo https://argoproj.github.io/argo-helm
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   become: true
 
 - name: Update Helm repos
-  command: helm repo update
+  ansible.builtin.command: helm repo update
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   become: true
 
 - name: Install ArgoCD
-  command: >
+  ansible.builtin.command: >
     helm upgrade --install argocd argo/argo-cd
     --namespace argocd
     --create-namespace
@@ -76,38 +82,43 @@
     --timeout 5m
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
   become: true
 
 - name: Wait for ArgoCD server to be Ready
-  command: k3s kubectl rollout status deployment argocd-server -n argocd --timeout=5m
+  ansible.builtin.command: k3s kubectl rollout status deployment argocd-server -n argocd --timeout=5m
+  changed_when: false
   become: true
 
 - name: Fetch ArgoCD initial admin password
-  command: >
+  ansible.builtin.command: >
     k3s kubectl -n argocd get secret argocd-initial-admin-secret
     -o jsonpath="{.data.password}"
   register: argocd_password_b64
+  changed_when: false
   become: true
 
 - name: Decode ArgoCD admin password
-  shell: echo "{{ argocd_password_b64.stdout }}" | base64 -d
+  ansible.builtin.shell: echo "{{ argocd_password_b64.stdout }}" | base64 -d
   register: argocd_password
+  changed_when: false
   delegate_to: localhost
 
 - name: Show ArgoCD admin password
-  debug:
+  ansible.builtin.debug:
     msg: "ArgoCD admin password: {{ argocd_password.stdout }}"
 
 - name: Get ArgoCD LoadBalancer IP
-  command: >
+  ansible.builtin.command: >
     k3s kubectl -n argocd get svc argocd-server
     -o jsonpath="{.status.loadBalancer.ingress[0].ip}"
   register: argocd_ip
+  changed_when: false
   become: true
   retries: 10
   delay: 10
   until: argocd_ip.stdout != ""
 
 - name: Show ArgoCD URL
-  debug:
+  ansible.builtin.debug:
     msg: "ArgoCD UI: https://{{ argocd_ip.stdout }} (user: admin)"
