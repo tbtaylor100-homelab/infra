@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install ansible-lint
-        run: pip install ansible-lint
+        run: pipx install ansible-lint
 
       - name: Run ansible-lint
         working-directory: ansible
