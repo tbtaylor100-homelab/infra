@@ -15,18 +15,22 @@ spec:
     spec:
       containers:
         - name: forgejo-mcp
-          image: node:22-alpine
-          command: ["/bin/sh", "-c"]
-          args: 
-            - |
-              apk add --no-cache git
-              # Use a standalone repo instead of the giant monorepo
-              git clone https://github.com/joshuatz/forgejo-mcp.git /app
-              cd /app
-              npm install
-              npm run build
-              # NOW mcp-proxy can actually run because the files exist
-              npx -y mcp-proxy --port 8080 -- node dist/index.js
+          image: ronmi/forgejo-mcp:latest
+          # This image is built to be a network server natively
+          args: ["http", "--address", ":8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: FORGEJOMCP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-mcp-secret
+                  key: token
+            - name: FORGEJOMCP_SERVER
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: FORGEJO_URL
 ---
 apiVersion: v1
 kind: Service
