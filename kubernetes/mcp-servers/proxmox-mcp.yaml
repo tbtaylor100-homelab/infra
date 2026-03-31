@@ -24,6 +24,8 @@ spec:
               git clone https://github.com/gilby125/mcp-proxmox.git /app
               cd /app
               npm install
+              npm run build
+              npx -y mcp-proxy --port 8080 -- npm start
           ports:
             - containerPort: 8080
           env:
