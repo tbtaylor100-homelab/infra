@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: proxmox-mcp
-          image: homelab-registry:3000/root/mcp-proxmox:latest
+          image: mcp-proxmox:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
           env:

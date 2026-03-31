@@ -1,25 +1,37 @@
 ---
-# Configures K3s to pull from the local Forgejo container registry via a stable alias.
-# "homelab-registry:3000" is used in K8s manifests; this maps it to the actual endpoint.
+# Imports locally-built MCP images directly into K3s containerd.
+# Avoids any registry dependency — images are saved from Docker and imported via ctr.
 # Must run before ArgoCD reconciles the mcp-servers Application.
 
-- name: Configure K3s registry alias for homelab-registry
-  ansible.builtin.copy:
-    dest: /etc/rancher/k3s/registries.yaml
-    content: |
-      mirrors:
-        "homelab-registry:3000":
-          endpoint:
-            - "http://{{ forgejo_host }}:3000"
-    mode: '0644'
+- name: Save forgejo-mcp image to tar
+  community.docker.docker_image:
+    name: forgejo-mcp:latest
+    archive_path: /tmp/forgejo-mcp.tar
+    source: local
   become: true
-  notify: Restart k3s
+
+- name: Save mcp-proxmox image to tar
+  community.docker.docker_image:
+    name: mcp-proxmox:latest
+    archive_path: /tmp/mcp-proxmox.tar
+    source: local
+  become: true
+
+- name: Import forgejo-mcp into K3s containerd
+  ansible.builtin.command: k3s ctr images import /tmp/forgejo-mcp.tar
+  changed_when: false
+  become: true
+
+- name: Import mcp-proxmox into K3s containerd
+  ansible.builtin.command: k3s ctr images import /tmp/mcp-proxmox.tar
+  changed_when: false
+  become: true
 
 - name: Create mcp-servers ConfigMap
   ansible.builtin.command: >
     k3s kubectl create configmap mcp-servers-config
     --namespace mcp-servers
-    --from-literal=FORGEJO_URL=http://{{ forgejo_host }}:3000
+    --from-literal=FORGEJO_URL={{ forgejo_url }}
     --from-literal=JIRA_URL={{ jira_url }}
     --from-literal=PROXMOX_HOST={{ proxmox_host }}
     --from-literal=PROXMOX_USER={{ proxmox_user }}
