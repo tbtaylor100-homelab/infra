@@ -16,16 +16,17 @@ spec:
       containers:
         - name: forgejo-mcp
           image: ghcr.io/github/github-mcp-server:latest
-          args: ["streamable-http", "--port", "8080"]
+          # Use 'sse' instead of 'streamable-http'
+          args: ["sse"]
           ports:
             - containerPort: 8080
           env:
-            - name: FORGEJOMCP_SERVER
+            - name: GITHUB_ENDPOINT
               valueFrom:
                 configMapKeyRef:
                   name: mcp-servers-config
                   key: FORGEJO_URL
-            - name: FORGEJOMCP_TOKEN
+            - name: GITHUB_PERSONAL_ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: forgejo-mcp-secret
