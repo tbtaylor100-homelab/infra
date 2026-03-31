@@ -1,0 +1,5 @@
+---
+- name: Provision MCP server prerequisites on k3s-control-01
+  hosts: k3s
+  roles:
+    - mcp-servers

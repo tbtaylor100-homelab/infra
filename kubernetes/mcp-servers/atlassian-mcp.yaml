@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: atlassian-mcp
+  namespace: mcp-servers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: atlassian-mcp
+  template:
+    metadata:
+      labels:
+        app: atlassian-mcp
+    spec:
+      containers:
+        - name: atlassian-mcp
+          image: ghcr.io/sooperset/mcp-atlassian:0.21.0
+          args: ["--transport", "streamable-http", "--port", "8080"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: JIRA_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: JIRA_URL
+            - name: JIRA_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: atlassian-mcp-secret
+                  key: username
+            - name: JIRA_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: atlassian-mcp-secret
+                  key: api_token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: atlassian-mcp
+  namespace: mcp-servers
+spec:
+  type: LoadBalancer
+  selector:
+    app: atlassian-mcp
+  ports:
+    - port: 8080
+      targetPort: 8080

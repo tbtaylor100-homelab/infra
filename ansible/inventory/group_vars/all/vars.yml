@@ -1,1 +1,8 @@
 timezone: America/New_York
+
+# MCP server config (non-secret)
+forgejo_host: "192.168.1.50"
+jira_url: "https://mahhaus.atlassian.net/"
+proxmox_host: "192.168.1.12"
+proxmox_user: "root@pam"
+proxmox_verify_ssl: "false"

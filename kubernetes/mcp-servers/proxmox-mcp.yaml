@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxmox-mcp
+  namespace: mcp-servers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxmox-mcp
+  template:
+    metadata:
+      labels:
+        app: proxmox-mcp
+    spec:
+      containers:
+        - name: proxmox-mcp
+          image: homelab-registry:3000/root/mcp-proxmox:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MCP_TRANSPORT
+              value: "streamable-http"
+            - name: MCP_PORT
+              value: "8080"
+            - name: PROXMOX_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: PROXMOX_HOST
+            - name: PROXMOX_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: PROXMOX_USER
+            - name: PROXMOX_VERIFY_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: PROXMOX_VERIFY_SSL
+            - name: PROXMOX_TOKEN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: proxmox-mcp-secret
+                  key: token_name
+            - name: PROXMOX_TOKEN_VALUE
+              valueFrom:
+                secretKeyRef:
+                  name: proxmox-mcp-secret
+                  key: token_value
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxmox-mcp
+  namespace: mcp-servers
+spec:
+  type: LoadBalancer
+  selector:
+    app: proxmox-mcp
+  ports:
+    - port: 8080
+      targetPort: 8080

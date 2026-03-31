@@ -1,0 +1,72 @@
+---
+# Configures K3s to pull from the local Forgejo container registry via a stable alias.
+# "homelab-registry:3000" is used in K8s manifests; this maps it to the actual endpoint.
+# Must run before ArgoCD reconciles the mcp-servers Application.
+
+- name: Configure K3s registry alias for homelab-registry
+  ansible.builtin.copy:
+    dest: /etc/rancher/k3s/registries.yaml
+    content: |
+      mirrors:
+        "homelab-registry:3000":
+          endpoint:
+            - "http://{{ forgejo_host }}:3000"
+    mode: '0644'
+  become: true
+  notify: Restart k3s
+
+- name: Create mcp-servers ConfigMap
+  ansible.builtin.command: >
+    k3s kubectl create configmap mcp-servers-config
+    --namespace mcp-servers
+    --from-literal=FORGEJO_URL=http://{{ forgejo_host }}:3000
+    --from-literal=JIRA_URL={{ jira_url }}
+    --from-literal=PROXMOX_HOST={{ proxmox_host }}
+    --from-literal=PROXMOX_USER={{ proxmox_user }}
+    --from-literal=PROXMOX_VERIFY_SSL={{ proxmox_verify_ssl }}
+    --dry-run=client -o yaml
+    | k3s kubectl apply -f -
+  changed_when: false
+  become: true
+
+- name: Create mcp-servers namespace
+  ansible.builtin.command: >
+    k3s kubectl create namespace mcp-servers --dry-run=client -o yaml
+    | k3s kubectl apply -f -
+  changed_when: false
+  become: true
+
+- name: Create forgejo-mcp secret
+  ansible.builtin.command: >
+    k3s kubectl create secret generic forgejo-mcp-secret
+    --namespace mcp-servers
+    --from-literal=token={{ forgejo_mcp_token }}
+    --dry-run=client -o yaml
+    | k3s kubectl apply -f -
+  changed_when: false
+  become: true
+  no_log: true
+
+- name: Create atlassian-mcp secret
+  ansible.builtin.command: >
+    k3s kubectl create secret generic atlassian-mcp-secret
+    --namespace mcp-servers
+    --from-literal=username={{ jira_username }}
+    --from-literal=api_token={{ jira_api_token }}
+    --dry-run=client -o yaml
+    | k3s kubectl apply -f -
+  changed_when: false
+  become: true
+  no_log: true
+
+- name: Create proxmox-mcp secret
+  ansible.builtin.command: >
+    k3s kubectl create secret generic proxmox-mcp-secret
+    --namespace mcp-servers
+    --from-literal=token_name={{ proxmox_mcp_token_name }}
+    --from-literal=token_value={{ proxmox_mcp_token_value }}
+    --dry-run=client -o yaml
+    | k3s kubectl apply -f -
+  changed_when: false
+  become: true
+  no_log: true
