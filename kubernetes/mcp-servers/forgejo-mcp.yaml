@@ -20,28 +20,13 @@ spec:
           args: 
             - |
               apk add --no-cache git
-              git clone https://github.com/modelcontextprotocol/servers.git /temp
-              # In the current monorepo, the path is /src/github
-              cp -r /temp/src/github /app
+              # Use a standalone repo instead of the giant monorepo
+              git clone https://github.com/joshuatz/forgejo-mcp.git /app
               cd /app
               npm install
               npm run build
-              # Check what was built to be sure
-              ls -R dist
+              # NOW mcp-proxy can actually run because the files exist
               npx -y mcp-proxy --port 8080 -- node dist/index.js
-          ports:
-            - containerPort: 8080
-          env:
-            - name: GITHUB_PERSONAL_ACCESS_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: forgejo-mcp-secret
-                  key: token
-            - name: GITHUB_ENDPOINT
-              valueFrom:
-                configMapKeyRef:
-                  name: mcp-servers-config
-                  key: FORGEJO_URL
 ---
 apiVersion: v1
 kind: Service
