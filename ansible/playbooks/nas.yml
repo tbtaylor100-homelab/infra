@@ -1,5 +1,0 @@
----
-- name: Configure NAS (Alexandria-OMV)
-  hosts: nas
-  roles:
-    - minio
