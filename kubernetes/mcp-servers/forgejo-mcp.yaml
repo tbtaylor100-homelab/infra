@@ -16,18 +16,16 @@ spec:
       containers:
         - name: forgejo-mcp
           image: node:22-alpine
-          # Use 'sse' instead of 'streamable-http'
           command: ["/bin/sh", "-c"]
           args: 
             - |
               apk add --no-cache git
-              git clone https://github.com/modelcontextprotocol/servers.git /temp
-              cp -r /temp/src/github /app
-              cd /app
+              git clone https://github.com/modelcontextprotocol/servers.git /app
+              cd /app/src/github
               npm install
               npm run build
-              # This runs the compiled JS directly to avoid CLI parser issues
-              node dist/index.js
+              # We use the proxy here too, because the GitHub server is also stdio-based
+              npx -y mcp-proxy --port 8080 -- node dist/index.js
           ports:
             - containerPort: 8080
           env:
