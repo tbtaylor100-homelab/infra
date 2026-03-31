@@ -3,6 +3,8 @@
   ansible.builtin.shell: >
     k3s kubectl create namespace mcp-servers --dry-run=client -o yaml
     | k3s kubectl apply -f -
+  args:
+    executable: /bin/bash
   changed_when: false
   become: true
 
@@ -17,6 +19,8 @@
     --from-literal=PROXMOX_VERIFY_SSL={{ proxmox_verify_ssl }}
     --dry-run=client -o yaml
     | k3s kubectl apply -f -
+  args:
+    executable: /bin/bash
   changed_when: false
   become: true
 
@@ -27,6 +31,8 @@
     --from-literal=token={{ forgejo_mcp_token }}
     --dry-run=client -o yaml
     | k3s kubectl apply -f -
+  args:
+    executable: /bin/bash
   changed_when: false
   become: true
   no_log: true
@@ -39,6 +45,8 @@
     --from-literal=api_token={{ jira_api_token }}
     --dry-run=client -o yaml
     | k3s kubectl apply -f -
+  args:
+    executable: /bin/bash
   changed_when: false
   become: true
   no_log: true
@@ -51,6 +59,8 @@
     --from-literal=token_value={{ proxmox_mcp_token_value }}
     --dry-run=client -o yaml
     | k3s kubectl apply -f -
+  args:
+    executable: /bin/bash
   changed_when: false
   become: true
   no_log: true
