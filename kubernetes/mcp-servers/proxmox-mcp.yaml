@@ -15,7 +15,15 @@ spec:
     spec:
       containers:
         - name: proxmox-mcp
-          image: ghcr.io/gilby125/mcp-proxmox:latest
+          image: node:22-alpine
+          command: ["/bin/sh", "-c"]
+          # This installs git, clones the repo, installs dependencies, and starts the server
+          args: 
+            - |
+              apk add --no-cache git
+              git clone https://github.com/gilby125/mcp-proxmox.git /app
+              cd /app
+              npm install
           ports:
             - containerPort: 8080
           env:
