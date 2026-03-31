@@ -1,36 +1,36 @@
 ---
 - name: Create mcp-servers namespace
-  ansible.builtin.shell: >
-    k3s kubectl create namespace mcp-servers --dry-run=client -o yaml
-    | k3s kubectl apply -f -
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl create namespace mcp-servers --dry-run=client -o yaml | k3s kubectl apply -f -
   args:
     executable: /bin/bash
   changed_when: false
   become: true
 
 - name: Create mcp-servers ConfigMap
-  ansible.builtin.shell: >
-    k3s kubectl create configmap mcp-servers-config
-    --namespace mcp-servers
-    --from-literal=FORGEJO_URL={{ forgejo_url }}
-    --from-literal=JIRA_URL={{ jira_url }}
-    --from-literal=PROXMOX_HOST={{ proxmox_host }}
-    --from-literal=PROXMOX_USER={{ proxmox_user }}
-    --from-literal=PROXMOX_VERIFY_SSL={{ proxmox_verify_ssl }}
-    --dry-run=client -o yaml
-    | k3s kubectl apply -f -
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl create configmap mcp-servers-config \
+      --namespace mcp-servers \
+      --from-literal=FORGEJO_URL={{ forgejo_url }} \
+      --from-literal=JIRA_URL={{ jira_url }} \
+      --from-literal=PROXMOX_HOST={{ proxmox_host }} \
+      --from-literal=PROXMOX_USER={{ proxmox_user }} \
+      --from-literal=PROXMOX_VERIFY_SSL={{ proxmox_verify_ssl }} \
+      --dry-run=client -o yaml | k3s kubectl apply -f -
   args:
     executable: /bin/bash
   changed_when: false
   become: true
 
 - name: Create forgejo-mcp secret
-  ansible.builtin.shell: >
-    k3s kubectl create secret generic forgejo-mcp-secret
-    --namespace mcp-servers
-    --from-literal=token={{ forgejo_mcp_token }}
-    --dry-run=client -o yaml
-    | k3s kubectl apply -f -
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl create secret generic forgejo-mcp-secret \
+      --namespace mcp-servers \
+      --from-literal=token={{ forgejo_mcp_token }} \
+      --dry-run=client -o yaml | k3s kubectl apply -f -
   args:
     executable: /bin/bash
   changed_when: false
@@ -38,13 +38,13 @@
   no_log: true
 
 - name: Create atlassian-mcp secret
-  ansible.builtin.shell: >
-    k3s kubectl create secret generic atlassian-mcp-secret
-    --namespace mcp-servers
-    --from-literal=username={{ jira_username }}
-    --from-literal=api_token={{ jira_api_token }}
-    --dry-run=client -o yaml
-    | k3s kubectl apply -f -
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl create secret generic atlassian-mcp-secret \
+      --namespace mcp-servers \
+      --from-literal=username={{ jira_username }} \
+      --from-literal=api_token={{ jira_api_token }} \
+      --dry-run=client -o yaml | k3s kubectl apply -f -
   args:
     executable: /bin/bash
   changed_when: false
@@ -52,13 +52,13 @@
   no_log: true
 
 - name: Create proxmox-mcp secret
-  ansible.builtin.shell: >
-    k3s kubectl create secret generic proxmox-mcp-secret
-    --namespace mcp-servers
-    --from-literal=token_name={{ proxmox_mcp_token_name }}
-    --from-literal=token_value={{ proxmox_mcp_token_value }}
-    --dry-run=client -o yaml
-    | k3s kubectl apply -f -
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl create secret generic proxmox-mcp-secret \
+      --namespace mcp-servers \
+      --from-literal=token_name={{ proxmox_mcp_token_name }} \
+      --from-literal=token_value={{ proxmox_mcp_token_value }} \
+      --dry-run=client -o yaml | k3s kubectl apply -f -
   args:
     executable: /bin/bash
   changed_when: false
