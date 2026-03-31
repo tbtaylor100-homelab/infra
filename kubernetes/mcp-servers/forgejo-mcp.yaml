@@ -15,22 +15,32 @@ spec:
     spec:
       containers:
         - name: forgejo-mcp
-          image: ghcr.io/github/github-mcp-server:latest
+          image: node:22-alpine
           # Use 'sse' instead of 'streamable-http'
-          args: ["sse"]
+          command: ["/bin/sh", "-c"]
+          args: 
+            - |
+              apk add --no-cache git
+              git clone https://github.com/modelcontextprotocol/servers.git /temp
+              cp -r /temp/src/github /app
+              cd /app
+              npm install
+              npm run build
+              # This runs the compiled JS directly to avoid CLI parser issues
+              node dist/index.js
           ports:
             - containerPort: 8080
           env:
-            - name: GITHUB_ENDPOINT
-              valueFrom:
-                configMapKeyRef:
-                  name: mcp-servers-config
-                  key: FORGEJO_URL
             - name: GITHUB_PERSONAL_ACCESS_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: forgejo-mcp-secret
                   key: token
+            - name: GITHUB_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: FORGEJO_URL
 ---
 apiVersion: v1
 kind: Service
