@@ -15,11 +15,8 @@ spec:
     spec:
       containers:
         - name: atlassian-mcp
-          image: ghcr.io/sooperset/mcp-atlassian:0.21.0
-          # We stop using the broken internal 'streamable-http'
-          # and let mcp-proxy handle the networking.
-          command: ["npx", "-y", "mcp-proxy", "--port", "8080", "--"]
-          args: ["python", "-m", "mcp_atlassian"]
+          image: wilderbeast/mcp-atlassian:latest
+          args: ["--transport", "sse", "--port", "8080"]
           ports:
             - containerPort: 8080
           env:
