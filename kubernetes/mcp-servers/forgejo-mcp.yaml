@@ -20,11 +20,14 @@ spec:
           args: 
             - |
               apk add --no-cache git
-              git clone https://github.com/modelcontextprotocol/servers.git /app
-              cd /app/src/github
+              git clone https://github.com/modelcontextprotocol/servers.git /temp
+              # In the current monorepo, the path is /src/github
+              cp -r /temp/src/github /app
+              cd /app
               npm install
               npm run build
-              # We use the proxy here too, because the GitHub server is also stdio-based
+              # Check what was built to be sure
+              ls -R dist
               npx -y mcp-proxy --port 8080 -- node dist/index.js
           ports:
             - containerPort: 8080
