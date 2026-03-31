@@ -15,8 +15,7 @@ spec:
     spec:
       containers:
         - name: forgejo-mcp
-          image: forgejo-mcp:latest
-          imagePullPolicy: Never
+          image: ghcr.io/github/github-mcp-server:latest
           args: ["streamable-http", "--port", "8080"]
           ports:
             - containerPort: 8080

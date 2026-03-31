@@ -15,8 +15,7 @@ spec:
     spec:
       containers:
         - name: proxmox-mcp
-          image: mcp-proxmox:latest
-          imagePullPolicy: Never
+          image: ghcr.io/gilby125/mcp-proxmox:latest
           ports:
             - containerPort: 8080
           env:

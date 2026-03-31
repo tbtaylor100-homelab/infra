@@ -1,34 +1,13 @@
 ---
-# Imports locally-built MCP images directly into K3s containerd.
-# Avoids any registry dependency — images are saved from Docker and imported via ctr.
-# Must run before ArgoCD reconciles the mcp-servers Application.
-
-- name: Save forgejo-mcp image to tar
-  community.docker.docker_image:
-    name: forgejo-mcp:latest
-    archive_path: /tmp/forgejo-mcp.tar
-    source: local
-  become: true
-
-- name: Save mcp-proxmox image to tar
-  community.docker.docker_image:
-    name: mcp-proxmox:latest
-    archive_path: /tmp/mcp-proxmox.tar
-    source: local
-  become: true
-
-- name: Import forgejo-mcp into K3s containerd
-  ansible.builtin.command: k3s ctr images import /tmp/forgejo-mcp.tar
-  changed_when: false
-  become: true
-
-- name: Import mcp-proxmox into K3s containerd
-  ansible.builtin.command: k3s ctr images import /tmp/mcp-proxmox.tar
+- name: Create mcp-servers namespace
+  ansible.builtin.shell: >
+    k3s kubectl create namespace mcp-servers --dry-run=client -o yaml
+    | k3s kubectl apply -f -
   changed_when: false
   become: true
 
 - name: Create mcp-servers ConfigMap
-  ansible.builtin.command: >
+  ansible.builtin.shell: >
     k3s kubectl create configmap mcp-servers-config
     --namespace mcp-servers
     --from-literal=FORGEJO_URL={{ forgejo_url }}
@@ -41,15 +20,8 @@
   changed_when: false
   become: true
 
-- name: Create mcp-servers namespace
-  ansible.builtin.command: >
-    k3s kubectl create namespace mcp-servers --dry-run=client -o yaml
-    | k3s kubectl apply -f -
-  changed_when: false
-  become: true
-
 - name: Create forgejo-mcp secret
-  ansible.builtin.command: >
+  ansible.builtin.shell: >
     k3s kubectl create secret generic forgejo-mcp-secret
     --namespace mcp-servers
     --from-literal=token={{ forgejo_mcp_token }}
@@ -60,7 +32,7 @@
   no_log: true
 
 - name: Create atlassian-mcp secret
-  ansible.builtin.command: >
+  ansible.builtin.shell: >
     k3s kubectl create secret generic atlassian-mcp-secret
     --namespace mcp-servers
     --from-literal=username={{ jira_username }}
@@ -72,7 +44,7 @@
   no_log: true
 
 - name: Create proxmox-mcp secret
-  ansible.builtin.command: >
+  ansible.builtin.shell: >
     k3s kubectl create secret generic proxmox-mcp-secret
     --namespace mcp-servers
     --from-literal=token_name={{ proxmox_mcp_token_name }}
