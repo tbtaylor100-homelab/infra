@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
         - name: atlassian-mcp
-          image: wilderbeast/mcp-atlassian:latest
+          image: ghcr.io/sooperset/mcp-atlassian:latest
+          # We use "sse" transport and explicitly set the port to 8080
           args: ["--transport", "sse", "--port", "8080"]
           ports:
             - containerPort: 8080
