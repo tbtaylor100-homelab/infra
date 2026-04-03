@@ -13,6 +13,7 @@ crash.log
 *.pem
 *.key
 *.secrets.yml
+secrets.yml
 
 # OS
 .DS_Store
