@@ -1,3 +1,4 @@
+# CI test: verifies OpenBao secret injection via AppRole (MAH-69)
 terraform {
   required_providers {
     proxmox = {
