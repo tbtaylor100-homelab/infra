@@ -67,15 +67,14 @@ jobs:
           tofu plan -no-color 2>&1 | tee /tmp/plan.txt
 
       - name: Post plan as PR comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const plan = fs.readFileSync('/tmp/plan.txt', 'utf8');
-            const truncated = plan.length > 60000 ? plan.slice(-60000) + '\n...(truncated)' : plan;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '## OpenTofu Plan\n```\n' + truncated + '\n```'
-            });
+        run: |
+          PLAN=$(cat /tmp/plan.txt)
+          if [ ${#PLAN} -gt 60000 ]; then
+            PLAN="...(truncated)\n$(echo "$PLAN" | tail -c 60000)"
+          fi
+          BODY=$(printf '## OpenTofu Plan\n```\n%s\n```' "$PLAN")
+          curl -sf --request POST \
+            --header "Content-Type: application/json" \
+            --header "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            --data "$(jq -n --arg body "$BODY" '{"body": $body}')" \
+            "${{ github.api_url }}/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
