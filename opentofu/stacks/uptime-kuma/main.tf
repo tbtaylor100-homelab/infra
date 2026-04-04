@@ -10,9 +10,18 @@ terraform {
     }
   }
 
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "s3" {
+    endpoint = "http://192.168.1.132:9000"
+    bucket   = "opentofu-state"
+    key      = "uptime-kuma/terraform.tfstate"
+    region   = "us-east-1" # MinIO ignores region but the field is required
+
+    skip_credentials_validation = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    use_path_style              = true
   }
+  # Credentials: export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY before running tofu
 }
 
 provider "proxmox" {

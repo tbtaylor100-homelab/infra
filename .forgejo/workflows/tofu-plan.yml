@@ -12,28 +12,26 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
-        with:
-          tofu_version: "1.9.0"
+        run: |
+          curl -Lo /tmp/tofu.tar.gz https://github.com/opentofu/opentofu/releases/download/v1.9.0/tofu_1.9.0_linux_amd64.tar.gz
+          tar -xzf /tmp/tofu.tar.gz -C /usr/local/bin tofu
+          tofu version
 
       - name: tofu fmt check
         working-directory: opentofu/stacks/k3s
         run: tofu fmt -check -recursive
 
-      - name: tofu init
-        working-directory: opentofu/stacks/k3s
-        run: tofu init -backend=false
-        env:
-          TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
-          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
-
       - name: tofu validate
         working-directory: opentofu/stacks/k3s
-        run: tofu validate
+        run: tofu init -backend=false && tofu validate
 
       - name: tofu plan
         working-directory: opentofu/stacks/k3s
-        run: tofu plan -no-color 2>&1 | tee /tmp/plan.txt
+        run: |
+          tofu init \
+            -backend-config="access_key=${{ secrets.MINIO_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.MINIO_SECRET_KEY }}"
+          tofu plan -no-color 2>&1 | tee /tmp/plan.txt
         env:
           TF_VAR_proxmox_endpoint: ${{ secrets.PROXMOX_ENDPOINT }}
           TF_VAR_proxmox_api_token: ${{ secrets.PROXMOX_API_TOKEN }}
