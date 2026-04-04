@@ -6,10 +6,10 @@ metadata:
 spec:
   project: default
   source:
-    # OpenBao Helm chart — verify latest version at https://github.com/openbao/openbao-helm/releases
-    repoURL: https://openbao.github.io/openbao
+    # OpenBao Helm chart — https://github.com/openbao/openbao-helm/releases
+    repoURL: https://openbao.github.io/openbao-helm
     chart: openbao
-    targetRevision: "0.9.0"
+    targetRevision: "0.26.2"
     helm:
       values: |
         server:
