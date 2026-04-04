@@ -29,6 +29,19 @@
   become: true
   no_log: true
 
+- name: Install qemu-guest-agent
+  ansible.builtin.apt:
+    name: qemu-guest-agent
+    state: present
+  become: true
+
+- name: Enable and start qemu-guest-agent
+  ansible.builtin.systemd:
+    name: qemu-guest-agent
+    enabled: true
+    state: started
+  become: true
+
 - name: Enable unattended security upgrades
   ansible.builtin.apt:
     name: unattended-upgrades
