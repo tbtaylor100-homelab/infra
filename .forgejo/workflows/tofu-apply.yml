@@ -46,12 +46,15 @@ jobs:
           echo "::add-mask::$MINIO_SECRET_KEY"
 
           # Propagate to subsequent steps via GITHUB_ENV
-          echo "TF_VAR_proxmox_endpoint=$PROXMOX_ENDPOINT"    >> $GITHUB_ENV
-          echo "TF_VAR_proxmox_api_token=$PROXMOX_API_TOKEN"  >> $GITHUB_ENV
-          echo "TF_VAR_ssh_public_key=$SSH_PUBLIC_KEY"        >> $GITHUB_ENV
-          echo "TF_VAR_ssh_private_key=$SSH_PRIVATE_KEY"      >> $GITHUB_ENV
-          echo "AWS_ACCESS_KEY_ID=$MINIO_ACCESS_KEY"          >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$MINIO_SECRET_KEY"      >> $GITHUB_ENV
+          # ssh_private_key is multi-line — must use heredoc format
+          {
+            echo "TF_VAR_proxmox_endpoint=$PROXMOX_ENDPOINT"
+            echo "TF_VAR_proxmox_api_token=$PROXMOX_API_TOKEN"
+            echo "TF_VAR_ssh_public_key=$SSH_PUBLIC_KEY"
+            echo "AWS_ACCESS_KEY_ID=$MINIO_ACCESS_KEY"
+            echo "AWS_SECRET_ACCESS_KEY=$MINIO_SECRET_KEY"
+            printf 'TF_VAR_ssh_private_key<<__EOF__\n%s\n__EOF__\n' "$SSH_PRIVATE_KEY"
+          } >> $GITHUB_ENV
 
       - name: tofu init
         working-directory: opentofu/stacks/k3s
