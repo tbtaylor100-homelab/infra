@@ -28,7 +28,7 @@ spec:
               }
 
               storage "file" {
-                path = "/vault/data"
+                path = "/openbao/data"
               }
 
           dataStorage:
