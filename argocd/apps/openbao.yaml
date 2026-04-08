@@ -56,12 +56,12 @@ spec:
                 - -c
                 - |
                   echo "Auto-unseal sidecar started"
-                  until curl -sf http://127.0.0.1:8200/v1/sys/health > /dev/null 2>&1; do
+                  until curl -s http://127.0.0.1:8200/v1/sys/health -o /dev/null; do
                     echo "Waiting for OpenBao to be ready..."
                     sleep 5
                   done
                   while true; do
-                    SEALED=$(curl -sf http://127.0.0.1:8200/v1/sys/health | grep -o '"sealed":[a-z]*' | cut -d: -f2)
+                    SEALED=$(curl -s http://127.0.0.1:8200/v1/sys/health | grep -o '"sealed":[a-z]*' | cut -d: -f2)
                     if [ "$SEALED" = "true" ]; then
                       echo "OpenBao is sealed -- unsealing..."
                       curl -sf -X POST http://127.0.0.1:8200/v1/sys/unseal \
