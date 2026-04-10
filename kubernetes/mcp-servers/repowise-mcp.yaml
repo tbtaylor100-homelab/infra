@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: repowise-data
+  namespace: mcp-servers
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repowise-mcp
+  namespace: mcp-servers
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repowise-mcp
+  template:
+    metadata:
+      labels:
+        app: repowise-mcp
+    spec:
+      imagePullSecrets:
+        - name: repowise-registry-secret
+      containers:
+        - name: repowise-mcp
+          image: 192.168.1.50:3000/root/repowise:0.2.1
+          ports:
+            - containerPort: 8080
+            - containerPort: 7337
+          env:
+            - name: FORGEJO_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mcp-servers-config
+                  key: FORGEJO_URL
+            - name: FORGEJO_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: repowise-mcp-secret
+                  key: token
+            - name: REPOWISE_REPOS
+              valueFrom:
+                secretKeyRef:
+                  name: repowise-mcp-secret
+                  key: repos
+            - name: REPOWISE_UPDATE_INTERVAL
+              value: "3600"
+          volumeMounts:
+            - name: repowise-data
+              mountPath: /data
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            failureThreshold: 60
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            failureThreshold: 5
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+      volumes:
+        - name: repowise-data
+          persistentVolumeClaim:
+            claimName: repowise-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: repowise-mcp
+  namespace: mcp-servers
+spec:
+  type: LoadBalancer
+  selector:
+    app: repowise-mcp
+  ports:
+    - name: mcp
+      port: 8080
+      targetPort: 8080
+    - name: web
+      port: 7337
+      targetPort: 7337
