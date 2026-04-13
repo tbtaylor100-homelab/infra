@@ -65,11 +65,7 @@ update_loop() {
 
 (init_repos && update_loop) &
 
+export REPOWISE_EMBEDDER=gemini
+
 echo "[repowise] Starting repowise serve on :7337"
-repowise serve --host 0.0.0.0 &
-
-echo "[repowise] Waiting for server to be ready..."
-until curl -s http://127.0.0.1:7337/ > /dev/null 2>&1; do sleep 2; done
-
-echo "[repowise] Starting mcp-proxy on :8080 -> :7337"
-exec mcp-proxy --port 8080 http://127.0.0.1:7337/sse
+exec repowise serve --host 0.0.0.0

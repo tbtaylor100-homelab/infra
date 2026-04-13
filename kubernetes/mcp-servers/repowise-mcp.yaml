@@ -32,7 +32,6 @@ spec:
         - name: repowise-mcp
           image: 192.168.1.50:3000/root/repowise:0.2.1
           ports:
-            - containerPort: 8080
             - containerPort: 7337
           env:
             - name: FORGEJO_URL
@@ -57,13 +56,13 @@ spec:
               mountPath: /data
           readinessProbe:
             tcpSocket:
-              port: 8080
+              port: 7337
             initialDelaySeconds: 10
             periodSeconds: 30
             failureThreshold: 60
           livenessProbe:
             tcpSocket:
-              port: 8080
+              port: 7337
             initialDelaySeconds: 30
             periodSeconds: 60
             failureThreshold: 5
@@ -90,8 +89,5 @@ spec:
     app: repowise-mcp
   ports:
     - name: mcp
-      port: 8080
-      targetPort: 8080
-    - name: web
       port: 7337
       targetPort: 7337
