@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: forgejo-runner
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-config
+  namespace: forgejo-runner
+data:
+  config.yml: |
+    log:
+      level: info
+    runner:
+      file: /data/.runner
+      capacity: 1
+      timeout: 3h
+      insecure: false
+    cache:
+      enabled: false
+    container:
+      network: ""
+      privileged: false
+      options: ""
+      workdir_parent: /opt/act
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo-runner
+  namespace: forgejo-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo-runner
+  template:
+    metadata:
+      labels:
+        app: forgejo-runner
+    spec:
+      initContainers:
+        - name: register
+          image: code.forgejo.org/forgejo/runner:3
+          workingDir: /data
+          command:
+            - sh
+            - -c
+            - |
+              forgejo-runner register \
+                --config /config/config.yml \
+                --instance http://192.168.1.50:3000 \
+                --token "$(RUNNER_TOKEN)" \
+                --name k3s-runner \
+                --labels ubuntu-latest \
+                --no-interactive
+          env:
+            - name: RUNNER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-runner-secret
+                  key: token
+          volumeMounts:
+            - name: runner-data
+              mountPath: /data
+            - name: runner-config
+              mountPath: /config
+      containers:
+        - name: runner
+          image: code.forgejo.org/forgejo/runner:3
+          workingDir: /data
+          command:
+            - forgejo-runner
+            - daemon
+            - --config
+            - /config/config.yml
+          env:
+            - name: DOCKER_HOST
+              value: tcp://localhost:2375
+          volumeMounts:
+            - name: runner-data
+              mountPath: /data
+            - name: runner-config
+              mountPath: /config
+        - name: dind
+          image: docker:27-dind
+          securityContext:
+            privileged: true
+          env:
+            - name: DOCKER_TLS_CERTDIR
+              value: ""
+          args:
+            - --insecure-registry=192.168.1.50:3000
+      volumes:
+        - name: runner-data
+          emptyDir: {}
+        - name: runner-config
+          configMap:
+            name: runner-config
