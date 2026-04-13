@@ -68,4 +68,5 @@ update_loop() {
 export REPOWISE_EMBEDDER=gemini
 
 echo "[repowise] Starting repowise MCP server on :7338"
-cd /data && exec repowise mcp --transport sse --port 7338
+cd /data && repowise mcp --transport sse --port 7339 &
+exec socat TCP-LISTEN:7338,bind=0.0.0.0,reuseaddr,fork TCP:127.0.0.1:7339

@@ -34,4 +34,4 @@ jobs:
 
       - name: Build and push image
         working-directory: docker/repowise
-        run: docker build -t 192.168.1.50:3000/${{ github.repository_owner }}/repowise:0.2.2 . && docker push 192.168.1.50:3000/${{ github.repository_owner }}/repowise:0.2.2
+        run: docker build -t 192.168.1.50:3000/${{ github.repository_owner }}/repowise:0.2.3 . && docker push 192.168.1.50:3000/${{ github.repository_owner }}/repowise:0.2.3
