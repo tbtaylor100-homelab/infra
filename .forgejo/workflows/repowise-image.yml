@@ -16,9 +16,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Fetch secrets from OpenBao
+        run: |
+          RESPONSE=$(curl -sf --request POST \
+            --header "Content-Type: application/json" \
+            --data "{\"role_id\":\"${{ secrets.OPENBAO_ROLE_ID }}\",\"secret_id\":\"${{ secrets.OPENBAO_SECRET_ID }}\"}" \
+            http://192.168.1.210:8200/v1/auth/approle/login)
+          BAO_TOKEN=$(echo "$RESPONSE" | jq -r '.auth.client_token')
+          FORGEJO_PACKAGE_TOKEN=$(curl -sf \
+            --header "X-Vault-Token: $BAO_TOKEN" \
+            http://192.168.1.210:8200/v1/secret/data/homelab/ci | jq -r '.data.data.forgejo_package_token')
+          echo "::add-mask::$FORGEJO_PACKAGE_TOKEN"
+          echo "FORGEJO_PACKAGE_TOKEN=$FORGEJO_PACKAGE_TOKEN" >> $GITHUB_ENV
+
       - name: Log in to Forgejo registry
-        run: echo "${{ github.token }}" | docker login 192.168.1.50:3000 -u ${{ github.actor }} --password-stdin
+        run: echo "$FORGEJO_PACKAGE_TOKEN" | docker login 192.168.1.50:3000 -u ${{ github.actor }} --password-stdin
 
       - name: Build and push image
         working-directory: docker/repowise
-        run: docker build -t 192.168.1.50:3000/root/repowise:0.2.1 . && docker push 192.168.1.50:3000/root/repowise:0.2.1
+        run: docker build -t 192.168.1.50:3000/${{ github.repository_owner }}/repowise:0.2.1 . && docker push 192.168.1.50:3000/${{ github.repository_owner }}/repowise:0.2.1
