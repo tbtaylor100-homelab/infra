@@ -67,5 +67,5 @@ update_loop() {
 
 export REPOWISE_EMBEDDER=gemini
 
-echo "[repowise] Starting repowise serve on :7337"
-exec repowise serve --host 0.0.0.0
+echo "[repowise] Starting repowise MCP server on :7338"
+cd /data && exec repowise mcp --transport sse --port 7338

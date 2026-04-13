@@ -30,9 +30,9 @@ spec:
         - name: repowise-registry-secret
       containers:
         - name: repowise-mcp
-          image: 192.168.1.50:3000/tbtaylor100/repowise:0.2.1
+          image: 192.168.1.50:3000/tbtaylor100/repowise:0.2.2
           ports:
-            - containerPort: 7337
+            - containerPort: 7338
           env:
             - name: FORGEJO_URL
               valueFrom:
@@ -56,13 +56,13 @@ spec:
               mountPath: /data
           readinessProbe:
             tcpSocket:
-              port: 7337
+              port: 7338
             initialDelaySeconds: 10
             periodSeconds: 30
             failureThreshold: 60
           livenessProbe:
             tcpSocket:
-              port: 7337
+              port: 7338
             initialDelaySeconds: 30
             periodSeconds: 60
             failureThreshold: 5
@@ -89,5 +89,5 @@ spec:
     app: repowise-mcp
   ports:
     - name: mcp
-      port: 7337
-      targetPort: 7337
+      port: 7338
+      targetPort: 7338
