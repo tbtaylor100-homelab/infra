@@ -13,3 +13,9 @@ variable "ssh_public_key" {
   description = "SSH public key to authorise on k3s-control-01"
   type        = string
 }
+
+variable "ssh_private_key" {
+  description = "SSH private key content used by bpg/proxmox for disk operations"
+  type        = string
+  sensitive   = true
+}

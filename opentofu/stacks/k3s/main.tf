@@ -1,3 +1,4 @@
+# CI test: verifies OpenBao secret injection via AppRole (MAH-69)
 terraform {
   required_providers {
     proxmox = {
@@ -30,7 +31,7 @@ provider "proxmox" {
   ssh {
     agent       = true
     username    = "root"
-    private_key = file("~/.ssh/id_ed25519")
+    private_key = var.ssh_private_key
   }
 }
 

@@ -46,6 +46,40 @@ spec:
             create: true
             name: "openbao"
 
+          # Sidecar that unseals OpenBao automatically after pod restarts.
+          # Reads the unseal key from the openbao-unseal-key K8s Secret (not in git).
+          extraContainers:
+            - name: auto-unseal
+              image: curlimages/curl:8.11.1
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  echo "Auto-unseal sidecar started"
+                  until curl -s http://127.0.0.1:8200/v1/sys/health -o /dev/null; do
+                    echo "Waiting for OpenBao to be ready..."
+                    sleep 5
+                  done
+                  while true; do
+                    SEALED=$(curl -s http://127.0.0.1:8200/v1/sys/health | grep -o '"sealed":[a-z]*' | cut -d: -f2)
+                    if [ "$SEALED" = "true" ]; then
+                      echo "OpenBao is sealed -- unsealing..."
+                      curl -sf -X POST http://127.0.0.1:8200/v1/sys/unseal \
+                        -H "Content-Type: application/json" \
+                        -d "{\"key\": \"$(cat /vault/unseal/key)\"}"
+                      echo "Unseal attempt complete"
+                    fi
+                    sleep 30
+                  done
+              volumeMounts:
+                - name: userconfig-openbao-unseal-key
+                  mountPath: /vault/unseal
+                  readOnly: true
+
+          extraVolumes:
+            - type: secret
+              name: openbao-unseal-key
+
         # Vault Agent Injector not needed — secrets are injected via CLI in CI workflows
         injector:
           enabled: false
