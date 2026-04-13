@@ -45,11 +45,11 @@ spec:
                 secretKeyRef:
                   name: repowise-mcp-secret
                   key: token
-            - name: REPOWISE_REPOS
+            - name: GEMINI_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: repowise-mcp-secret
-                  key: repos
+                  key: gemini_api_key
             - name: REPOWISE_UPDATE_INTERVAL
               value: "3600"
           volumeMounts:
