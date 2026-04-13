@@ -20,9 +20,9 @@ data:
     cache:
       enabled: false
     container:
-      network: ""
+      network: host
       privileged: false
-      options: ""
+      options: "-e DOCKER_HOST=tcp://localhost:2375"
       workdir_parent: /opt/act
 ---
 apiVersion: apps/v1
@@ -42,18 +42,18 @@ spec:
     spec:
       initContainers:
         - name: register
-          image: code.forgejo.org/forgejo/runner:3
+          image: gitea/act_runner:latest
           workingDir: /data
           command:
             - sh
             - -c
             - |
-              forgejo-runner register \
+              act_runner register \
                 --config /config/config.yml \
                 --instance http://192.168.1.50:3000 \
                 --token "$(RUNNER_TOKEN)" \
                 --name k3s-runner \
-                --labels ubuntu-latest \
+                --labels ubuntu-latest:docker://catthehacker/ubuntu:act-22.04 \
                 --no-interactive
           env:
             - name: RUNNER_TOKEN
@@ -68,10 +68,10 @@ spec:
               mountPath: /config
       containers:
         - name: runner
-          image: code.forgejo.org/forgejo/runner:3
+          image: gitea/act_runner:latest
           workingDir: /data
           command:
-            - forgejo-runner
+            - act_runner
             - daemon
             - --config
             - /config/config.yml
