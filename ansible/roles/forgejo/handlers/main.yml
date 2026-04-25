@@ -1,5 +1,6 @@
 ---
-- name: restart forgejo container
+- name: Restart forgejo container
   ansible.builtin.shell:
     cmd: "docker compose pull && docker compose up -d"
     chdir: "{{ forgejo_compose_dir }}"
+  changed_when: true

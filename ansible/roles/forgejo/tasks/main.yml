@@ -4,13 +4,13 @@
     path: "{{ forgejo_compose_dir }}/docker-compose.yml"
     regexp: '^\s+image: codeberg\.org/forgejo/forgejo:'
     line: "    image: {{ forgejo_image }}:{{ forgejo_image_tag }}"
-  notify: restart forgejo container
+  notify: Restart forgejo container
 
 - name: Wait for Forgejo API to be ready
   ansible.builtin.uri:
     url: "http://127.0.0.1:3000/api/v1/version"
     status_code: 200
-  register: result
-  until: result.status == 200
+  register: forgejo_api_result
+  until: forgejo_api_result.status == 200
   retries: 12
   delay: 5
