@@ -1,4 +1,4 @@
 ---
 forgejo_compose_dir: "/opt/apps/forgejo"
 forgejo_image: "codeberg.org/forgejo/forgejo"
-forgejo_image_tag: "14"
+forgejo_image_tag: "15"
