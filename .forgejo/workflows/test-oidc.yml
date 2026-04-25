@@ -1,0 +1,80 @@
+name: Test Forgejo OIDC
+
+on:
+  push:
+    branches:
+      - 'test/oidc-*'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  test-oidc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request Forgejo OIDC token
+        run: |
+          echo "TOKEN_URL: $ACTIONS_ID_TOKEN_REQUEST_URL"
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "ERROR: ACTIONS_ID_TOKEN_REQUEST_URL not set — runner does not support OIDC"
+            exit 1
+          fi
+
+          OIDC_TOKEN=$(curl -sf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
+
+          if [ -z "$OIDC_TOKEN" ] || [ "$OIDC_TOKEN" = "null" ]; then
+            echo "ERROR: Failed to obtain OIDC token"
+            exit 1
+          fi
+
+          echo "OIDC token obtained (length: ${#OIDC_TOKEN})"
+
+          # Decode and print claims (not the token itself)
+          echo "$OIDC_TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '{iss, sub, repository, ref, workflow}'
+
+      - name: Exchange OIDC token for OpenBao token
+        run: |
+          OIDC_TOKEN=$(curl -sf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
+
+          RESPONSE=$(curl -sf --request POST \
+            --header "Content-Type: application/json" \
+            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-plan\"}" \
+            http://192.168.1.210:8200/v1/auth/jwt/login)
+
+          BAO_TOKEN=$(echo "$RESPONSE" | jq -r '.auth.client_token')
+
+          if [ -z "$BAO_TOKEN" ] || [ "$BAO_TOKEN" = "null" ]; then
+            echo "ERROR: OpenBao JWT login failed"
+            echo "$RESPONSE" | jq .
+            exit 1
+          fi
+
+          echo "OpenBao token obtained successfully"
+
+      - name: Read a non-sensitive secret from OpenBao
+        run: |
+          OIDC_TOKEN=$(curl -sf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
+
+          BAO_TOKEN=$(curl -sf --request POST \
+            --header "Content-Type: application/json" \
+            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-plan\"}" \
+            http://192.168.1.210:8200/v1/auth/jwt/login | jq -r '.auth.client_token')
+
+          PROXMOX_ENDPOINT=$(curl -sf \
+            --header "X-Vault-Token: $BAO_TOKEN" \
+            http://192.168.1.210:8200/v1/secret/data/homelab/ci \
+            | jq -r '.data.data.proxmox_endpoint')
+
+          if [ -z "$PROXMOX_ENDPOINT" ] || [ "$PROXMOX_ENDPOINT" = "null" ]; then
+            echo "ERROR: Failed to read proxmox_endpoint from OpenBao"
+            exit 1
+          fi
+
+          echo "Successfully read proxmox_endpoint: $PROXMOX_ENDPOINT"
