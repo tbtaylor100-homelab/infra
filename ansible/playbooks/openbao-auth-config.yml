@@ -8,8 +8,6 @@
     k3s_api: "https://192.168.1.60:6443"
     forgejo_jwks: "http://192.168.1.50:3000/login/oauth/keys"
     forgejo_issuer: "http://192.168.1.50:3000"
-  vars_files:
-    - ../inventory/group_vars/all/secrets.yml
 
   tasks:
     - name: Enable Kubernetes auth backend
