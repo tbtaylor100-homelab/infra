@@ -1,0 +1,7 @@
+---
+forgejo_version: "15.0.0"
+forgejo_binary_path: "/opt/apps/forgejo/forgejo"
+forgejo_service_name: "forgejo"
+forgejo_user: "git"
+# Download URL for Codeberg releases
+forgejo_download_url: "https://codeberg.org/forgejo/forgejo/releases/download/v{{ forgejo_version }}/forgejo-{{ forgejo_version }}-linux-amd64"

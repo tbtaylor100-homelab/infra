@@ -1,0 +1,6 @@
+---
+- name: Upgrade Forgejo to v{{ forgejo_version }}
+  hosts: homelab
+  become: true
+  roles:
+    - forgejo

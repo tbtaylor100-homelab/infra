@@ -1,0 +1,6 @@
+---
+- name: restart forgejo
+  ansible.builtin.systemd:
+    name: "{{ forgejo_service_name }}"
+    state: restarted
+  become: true
