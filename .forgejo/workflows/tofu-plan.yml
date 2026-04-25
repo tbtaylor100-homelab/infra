@@ -8,6 +8,9 @@ on:
 jobs:
   plan:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -17,14 +20,18 @@ jobs:
           tar -xzf /tmp/tofu.tar.gz -C /usr/local/bin tofu
           tofu version
 
-      - name: Fetch secrets from OpenBao
+      - name: Fetch secrets from OpenBao via Forgejo OIDC
         run: |
-          # AppRole login — role_id is non-sensitive, secret_id is the protected credential
-          RESPONSE=$(curl -sf --request POST \
+          # Request per-job OIDC token from Forgejo
+          OIDC_TOKEN=$(curl -sf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
+
+          # Exchange OIDC token for OpenBao token
+          BAO_TOKEN=$(curl -sf --request POST \
             --header "Content-Type: application/json" \
-            --data "{\"role_id\":\"${{ secrets.OPENBAO_ROLE_ID }}\",\"secret_id\":\"${{ secrets.OPENBAO_SECRET_ID }}\"}" \
-            http://192.168.1.210:8200/v1/auth/approle/login)
-          BAO_TOKEN=$(echo "$RESPONSE" | jq -r '.auth.client_token')
+            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-plan\"}" \
+            http://192.168.1.210:8200/v1/auth/jwt/login | jq -r '.auth.client_token')
 
           # Read all CI secrets in one call
           SECRETS=$(curl -sf \
@@ -38,14 +45,11 @@ jobs:
           MINIO_ACCESS_KEY=$(echo "$SECRETS"    | jq -r '.minio_access_key')
           MINIO_SECRET_KEY=$(echo "$SECRETS"    | jq -r '.minio_secret_key')
 
-          # Mask sensitive values so they never appear in runner logs
           echo "::add-mask::$PROXMOX_API_TOKEN"
           echo "::add-mask::$SSH_PRIVATE_KEY"
           echo "::add-mask::$MINIO_ACCESS_KEY"
           echo "::add-mask::$MINIO_SECRET_KEY"
 
-          # Propagate to subsequent steps via GITHUB_ENV
-          # ssh_private_key is multi-line — must use heredoc format
           {
             echo "TF_VAR_proxmox_endpoint=$PROXMOX_ENDPOINT"
             echo "TF_VAR_proxmox_api_token=$PROXMOX_API_TOKEN"
