@@ -1,9 +1,7 @@
 name: Test Forgejo OIDC
 
 on:
-  push:
-    branches:
-      - 'test/oidc-*'
+  pull_request:
 
 permissions:
   id-token: write
