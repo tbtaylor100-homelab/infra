@@ -1,6 +1,5 @@
 ---
-- name: restart forgejo
-  ansible.builtin.systemd:
-    name: "{{ forgejo_service_name }}"
-    state: restarted
-  become: true
+- name: restart forgejo container
+  ansible.builtin.shell:
+    cmd: "docker compose pull && docker compose up -d"
+    chdir: "{{ forgejo_compose_dir }}"

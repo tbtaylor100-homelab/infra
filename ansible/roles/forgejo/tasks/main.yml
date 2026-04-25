@@ -1,42 +1,10 @@
 ---
-- name: Get current Forgejo version
-  ansible.builtin.command: "{{ forgejo_binary_path }} --version"
-  register: current_version
-  changed_when: false
-
-- name: Download Forgejo v{{ forgejo_version }} binary
-  ansible.builtin.get_url:
-    url: "{{ forgejo_download_url }}"
-    dest: "/tmp/forgejo-{{ forgejo_version }}"
-    mode: "0755"
-  when: forgejo_version not in current_version.stdout
-
-- name: Stop Forgejo service
-  ansible.builtin.systemd:
-    name: "{{ forgejo_service_name }}"
-    state: stopped
-  when: forgejo_version not in current_version.stdout
-  become: true
-
-- name: Replace Forgejo binary
-  ansible.builtin.copy:
-    src: "/tmp/forgejo-{{ forgejo_version }}"
-    dest: "{{ forgejo_binary_path }}"
-    owner: "{{ forgejo_user }}"
-    group: "{{ forgejo_user }}"
-    mode: "0755"
-    remote_src: true
-  when: forgejo_version not in current_version.stdout
-  become: true
-  notify: restart forgejo
-
-- name: Start Forgejo service
-  ansible.builtin.systemd:
-    name: "{{ forgejo_service_name }}"
-    state: started
-    enabled: true
-  when: forgejo_version not in current_version.stdout
-  become: true
+- name: Set Forgejo image tag in docker-compose.yml
+  ansible.builtin.lineinfile:
+    path: "{{ forgejo_compose_dir }}/docker-compose.yml"
+    regexp: '^\s+image: codeberg\.org/forgejo/forgejo:'
+    line: "    image: {{ forgejo_image }}:{{ forgejo_image_tag }}"
+  notify: restart forgejo container
 
 - name: Wait for Forgejo API to be ready
   ansible.builtin.uri:
