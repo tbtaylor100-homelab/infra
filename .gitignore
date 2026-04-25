@@ -17,3 +17,12 @@ secrets.yml
 
 # OS
 .DS_Store
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# MCP server config (machine-specific local paths)
+.mcp.json
+
+# RepoWise local index (regenerable via `repowise init`)
+.repowise/
