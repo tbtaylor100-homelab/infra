@@ -6,8 +6,7 @@
   vars:
     openbao_addr: "http://192.168.1.210:8200"
     k3s_api: "https://192.168.1.60:6443"
-    forgejo_jwks: "http://192.168.1.50:3000/login/oauth/keys"
-    forgejo_issuer: "http://192.168.1.50:3000"
+    forgejo_oidc_discovery: "http://192.168.1.50:3000/api/actions"
 
   tasks:
     - name: Enable Kubernetes auth backend
@@ -56,8 +55,7 @@
           X-Vault-Token: "{{ openbao_root_token }}"
         body_format: json
         body:
-          jwks_url: "{{ forgejo_jwks }}"
-          bound_issuer: "{{ forgejo_issuer }}"
+          oidc_discovery_url: "{{ forgejo_oidc_discovery }}"
         status_code: [200, 204]
 
     - name: Create ci-reader policy
@@ -119,7 +117,7 @@
           bound_claims_type: glob
           bound_claims:
             repository:
-              - root/infra
+              - tbtaylor100/infra
           user_claim: sub
           policies:
             - ci-reader
@@ -140,7 +138,7 @@
           bound_claims_type: glob
           bound_claims:
             repository:
-              - root/infra
+              - tbtaylor100/infra
             ref:
               - refs/heads/main
           user_claim: sub
