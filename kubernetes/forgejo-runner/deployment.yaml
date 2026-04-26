@@ -11,7 +11,7 @@ metadata:
 data:
   config.yml: |
     log:
-      level: info
+      level: debug
     runner:
       file: /data/.runner
       capacity: 1
@@ -42,7 +42,7 @@ spec:
     spec:
       initContainers:
         - name: register
-          image: code.forgejo.org/forgejo/runner:6.0.0
+          image: code.forgejo.org/forgejo/runner:12.9.0
           workingDir: /data
           command:
             - sh
@@ -68,7 +68,7 @@ spec:
               mountPath: /config
       containers:
         - name: runner
-          image: code.forgejo.org/forgejo/runner:6.0.0
+          image: code.forgejo.org/forgejo/runner:12.9.0
           workingDir: /data
           command:
             - forgejo-runner

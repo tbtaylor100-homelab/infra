@@ -3,9 +3,7 @@ name: Test Forgejo OIDC
 on:
   pull_request:
 
-permissions:
-  id-token: write
-  contents: read
+enable-openid-connect: true
 
 jobs:
   test-oidc:
