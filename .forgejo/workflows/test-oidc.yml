@@ -28,8 +28,8 @@ jobs:
 
           echo "OIDC token obtained (length: ${#OIDC_TOKEN})"
 
-          # Decode and print claims (not the token itself)
-          echo "$OIDC_TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '{iss, sub, repository, ref, workflow}'
+          # Decode and print claims (base64url needs padding and char substitution)
+          echo "$OIDC_TOKEN" | cut -d. -f2 | tr '_-' '/+' | awk '{l=length($0)%4; if(l==2) print $0"=="; else if(l==3) print $0"="; else print $0}' | base64 -d 2>/dev/null | jq '{iss, sub, repository, ref, workflow}'
 
       - name: Exchange OIDC token for OpenBao token
         run: |
