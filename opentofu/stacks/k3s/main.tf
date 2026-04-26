@@ -1,4 +1,4 @@
-# CI test: verifies OpenBao secret injection via AppRole (MAH-69)
+# CI: secrets injected via Forgejo OIDC → OpenBao JWT auth (MAH-70)
 terraform {
   required_providers {
     proxmox = {
