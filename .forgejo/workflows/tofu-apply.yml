@@ -1,6 +1,11 @@
 name: OpenTofu Apply
 
 on:
+  pull_request:
+    paths:
+      - 'opentofu/**'
+      - '.forgejo/workflows/tofu-apply.yml'
+      - '.forgejo/actions/fetch-openbao-secrets/**'
   push:
     branches:
       - main
@@ -8,55 +13,50 @@ on:
       - 'opentofu/**'
 
 jobs:
-  apply:
+  validate:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     enable-openid-connect: true
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup OpenTofu
-        uses: opentofu/setup-opentofu@v1
-        with:
-          tofu_version: "1.9.0"
-
-      - name: Fetch secrets from OpenBao via Forgejo OIDC
         run: |
-          # Request per-job OIDC token from Forgejo
-          OIDC_TOKEN=$(curl -sf \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
+          curl -Lo /tmp/tofu.tar.gz https://github.com/opentofu/opentofu/releases/download/v1.9.0/tofu_1.9.0_linux_amd64.tar.gz
+          tar -xzf /tmp/tofu.tar.gz -C /usr/local/bin tofu
+          tofu version
 
-          # Exchange OIDC token for OpenBao token
-          BAO_TOKEN=$(curl -sf --request POST \
-            --header "Content-Type: application/json" \
-            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-apply\"}" \
-            http://192.168.1.210:8200/v1/auth/jwt/login | jq -r '.auth.client_token')
+      - uses: ./.forgejo/actions/fetch-openbao-secrets
+        with:
+          role: ci-plan
 
-          # Read all CI secrets in one call
-          SECRETS=$(curl -sf \
-            --header "X-Vault-Token: $BAO_TOKEN" \
-            http://192.168.1.210:8200/v1/secret/data/homelab/ci | jq -r '.data.data')
+      - name: tofu init
+        working-directory: opentofu/stacks/k3s
+        run: |
+          tofu init \
+            -backend-config="access_key=${AWS_ACCESS_KEY_ID}" \
+            -backend-config="secret_key=${AWS_SECRET_ACCESS_KEY}"
 
-          PROXMOX_ENDPOINT=$(echo "$SECRETS"    | jq -r '.proxmox_endpoint')
-          PROXMOX_API_TOKEN=$(echo "$SECRETS"   | jq -r '.proxmox_api_token')
-          SSH_PUBLIC_KEY=$(echo "$SECRETS"      | jq -r '.ssh_public_key')
-          SSH_PRIVATE_KEY=$(echo "$SECRETS"     | jq -r '.ssh_private_key')
-          MINIO_ACCESS_KEY=$(echo "$SECRETS"    | jq -r '.minio_access_key')
-          MINIO_SECRET_KEY=$(echo "$SECRETS"    | jq -r '.minio_secret_key')
+      - name: tofu plan
+        working-directory: opentofu/stacks/k3s
+        run: tofu plan -no-color
 
-          echo "::add-mask::$PROXMOX_API_TOKEN"
-          echo "::add-mask::$SSH_PRIVATE_KEY"
-          echo "::add-mask::$MINIO_ACCESS_KEY"
-          echo "::add-mask::$MINIO_SECRET_KEY"
+  apply:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    enable-openid-connect: true
+    steps:
+      - uses: actions/checkout@v4
 
-          {
-            echo "TF_VAR_proxmox_endpoint=$PROXMOX_ENDPOINT"
-            echo "TF_VAR_proxmox_api_token=$PROXMOX_API_TOKEN"
-            echo "TF_VAR_ssh_public_key=$SSH_PUBLIC_KEY"
-            echo "AWS_ACCESS_KEY_ID=$MINIO_ACCESS_KEY"
-            echo "AWS_SECRET_ACCESS_KEY=$MINIO_SECRET_KEY"
-            printf 'TF_VAR_ssh_private_key<<__EOF__\n%s\n__EOF__\n' "$SSH_PRIVATE_KEY"
-          } >> $GITHUB_ENV
+      - name: Setup OpenTofu
+        run: |
+          curl -Lo /tmp/tofu.tar.gz https://github.com/opentofu/opentofu/releases/download/v1.9.0/tofu_1.9.0_linux_amd64.tar.gz
+          tar -xzf /tmp/tofu.tar.gz -C /usr/local/bin tofu
+          tofu version
+
+      - uses: ./.forgejo/actions/fetch-openbao-secrets
+        with:
+          role: ci-apply
 
       - name: tofu init
         working-directory: opentofu/stacks/k3s
