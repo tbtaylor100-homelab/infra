@@ -1,9 +1,9 @@
 ---
 - name: Set Forgejo image tag in docker-compose.yml
-  ansible.builtin.lineinfile:
+  ansible.builtin.replace:
     path: "{{ forgejo_compose_dir }}/docker-compose.yml"
-    regexp: '^\s+image: codeberg\.org/forgejo/forgejo:'
-    line: "    image: {{ forgejo_image }}:{{ forgejo_image_tag }}"
+    regexp: 'image: codeberg\.org/forgejo/forgejo:\S+'
+    replace: "image: {{ forgejo_image }}:{{ forgejo_image_tag }}"
   notify: Restart forgejo container
 
 - name: Wait for Forgejo API to be ready

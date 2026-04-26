@@ -74,3 +74,23 @@ jobs:
           fi
 
           echo "Successfully read proxmox_endpoint: $PROXMOX_ENDPOINT"
+
+      - name: Verify ci-apply role rejects non-main branch (branch restriction enforcement)
+        run: |
+          OIDC_TOKEN=$(curl -sf \
+            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
+
+          HTTP_CODE=$(curl -s -o /tmp/bao-apply-response.json -w "%{http_code}" --request POST \
+            --header "Content-Type: application/json" \
+            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-apply\"}" \
+            http://192.168.1.210:8200/v1/auth/jwt/login)
+
+          echo "OpenBao ci-apply login HTTP status: $HTTP_CODE"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "ERROR: ci-apply should have been rejected on a non-main branch"
+            exit 1
+          fi
+
+          echo "PASS: ci-apply correctly rejected this branch (ref=$(echo "$OIDC_TOKEN" | cut -d. -f2 | tr '_-' '/+' | awk '{l=length($0)%4; if(l==2) print $0"=="; else if(l==3) print $0"="; else print $0}' | base64 -d 2>/dev/null | jq -r '.ref'))"
