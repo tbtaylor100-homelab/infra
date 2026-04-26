@@ -8,9 +8,7 @@ on:
 jobs:
   plan:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
+    enable-openid-connect: true
     steps:
       - uses: actions/checkout@v4
 
