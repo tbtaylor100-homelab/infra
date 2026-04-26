@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'opentofu/**'
+      - '.forgejo/actions/fetch-openbao-secrets/**'
 
 jobs:
   plan:

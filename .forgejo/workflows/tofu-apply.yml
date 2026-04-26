@@ -5,6 +5,7 @@ on:
     paths:
       - 'opentofu/**'
       - '.forgejo/workflows/tofu-apply.yml'
+      - '.forgejo/actions/fetch-openbao-secrets/**'
   push:
     branches:
       - main
