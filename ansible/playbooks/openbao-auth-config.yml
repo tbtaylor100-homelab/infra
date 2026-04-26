@@ -1,0 +1,148 @@
+---
+- name: Configure OpenBao auth backends
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    openbao_addr: "http://192.168.1.210:8200"
+    k3s_api: "https://192.168.1.60:6443"
+    forgejo_oidc_discovery: "http://192.168.1.50:3000/api/actions"
+
+  tasks:
+    - name: Enable Kubernetes auth backend
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/sys/auth/kubernetes"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          type: kubernetes
+        status_code: [200, 204, 400]
+      register: k8s_enable
+      changed_when: k8s_enable.status in [200, 204]
+
+    - name: Configure Kubernetes auth backend
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/auth/kubernetes/config"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          kubernetes_host: "{{ k3s_api }}"
+          disable_local_ca_jwt: false
+        status_code: [200, 204]
+
+    - name: Enable JWT auth backend
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/sys/auth/jwt"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          type: jwt
+        status_code: [200, 204, 400]
+      register: jwt_enable
+      changed_when: jwt_enable.status in [200, 204]
+
+    - name: Configure JWT auth backend with Forgejo JWKS
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/auth/jwt/config"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          oidc_discovery_url: "{{ forgejo_oidc_discovery }}"
+        status_code: [200, 204]
+
+    - name: Create ci-reader policy
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/sys/policies/acl/ci-reader"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          policy: |
+            path "secret/data/homelab/ci" {
+              capabilities = ["read"]
+            }
+        status_code: [200, 204]
+
+    - name: Create eso-policy
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/sys/policies/acl/eso-policy"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          policy: |
+            path "secret/data/homelab/ci" {
+              capabilities = ["read"]
+            }
+        status_code: [200, 204]
+
+    - name: Create Kubernetes auth role for ESO
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/auth/kubernetes/role/eso-reader"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          bound_service_account_names:
+            - external-secrets
+          bound_service_account_namespaces:
+            - external-secrets
+          policies:
+            - eso-policy
+          ttl: "1h"
+        status_code: [200, 204]
+
+    - name: Create JWT role ci-plan (any branch, infra repo only)
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/auth/jwt/role/ci-plan"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          role_type: jwt
+          bound_audiences:
+            - openbao
+          bound_claims_type: glob
+          bound_claims:
+            repository:
+              - tbtaylor100/infra
+          user_claim: sub
+          policies:
+            - ci-reader
+          ttl: "5m"
+        status_code: [200, 204]
+
+    - name: Create JWT role ci-apply (main branch only)
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/auth/jwt/role/ci-apply"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          role_type: jwt
+          bound_audiences:
+            - openbao
+          bound_claims_type: glob
+          bound_claims:
+            repository:
+              - tbtaylor100/infra
+            ref:
+              - refs/heads/main
+          user_claim: sub
+          policies:
+            - ci-reader
+          ttl: "5m"
+        status_code: [200, 204]

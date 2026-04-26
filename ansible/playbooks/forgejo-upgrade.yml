@@ -1,0 +1,6 @@
+---
+- name: Manage Forgejo container image
+  hosts: homelab
+  become: true
+  roles:
+    - forgejo
