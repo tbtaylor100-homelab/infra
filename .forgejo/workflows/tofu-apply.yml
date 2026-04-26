@@ -25,41 +25,9 @@ jobs:
           tar -xzf /tmp/tofu.tar.gz -C /usr/local/bin tofu
           tofu version
 
-      - name: Fetch secrets from OpenBao via Forgejo OIDC
-        run: |
-          OIDC_TOKEN=$(curl -sf \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
-
-          BAO_TOKEN=$(curl -sf --request POST \
-            --header "Content-Type: application/json" \
-            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-plan\"}" \
-            http://192.168.1.210:8200/v1/auth/jwt/login | jq -r '.auth.client_token')
-
-          SECRETS=$(curl -sf \
-            --header "X-Vault-Token: $BAO_TOKEN" \
-            http://192.168.1.210:8200/v1/secret/data/homelab/ci | jq -r '.data.data')
-
-          PROXMOX_ENDPOINT=$(echo "$SECRETS"    | jq -r '.proxmox_endpoint')
-          PROXMOX_API_TOKEN=$(echo "$SECRETS"   | jq -r '.proxmox_api_token')
-          SSH_PUBLIC_KEY=$(echo "$SECRETS"      | jq -r '.ssh_public_key')
-          SSH_PRIVATE_KEY=$(echo "$SECRETS"     | jq -r '.ssh_private_key')
-          MINIO_ACCESS_KEY=$(echo "$SECRETS"    | jq -r '.minio_access_key')
-          MINIO_SECRET_KEY=$(echo "$SECRETS"    | jq -r '.minio_secret_key')
-
-          echo "::add-mask::$PROXMOX_API_TOKEN"
-          echo "::add-mask::$SSH_PRIVATE_KEY"
-          echo "::add-mask::$MINIO_ACCESS_KEY"
-          echo "::add-mask::$MINIO_SECRET_KEY"
-
-          {
-            echo "TF_VAR_proxmox_endpoint=$PROXMOX_ENDPOINT"
-            echo "TF_VAR_proxmox_api_token=$PROXMOX_API_TOKEN"
-            echo "TF_VAR_ssh_public_key=$SSH_PUBLIC_KEY"
-            echo "AWS_ACCESS_KEY_ID=$MINIO_ACCESS_KEY"
-            echo "AWS_SECRET_ACCESS_KEY=$MINIO_SECRET_KEY"
-            printf 'TF_VAR_ssh_private_key<<__EOF__\n%s\n__EOF__\n' "$SSH_PRIVATE_KEY"
-          } >> $GITHUB_ENV
+      - uses: ./.forgejo/actions/fetch-openbao-secrets
+        with:
+          role: ci-plan
 
       - name: tofu init
         working-directory: opentofu/stacks/k3s
@@ -85,41 +53,9 @@ jobs:
           tar -xzf /tmp/tofu.tar.gz -C /usr/local/bin tofu
           tofu version
 
-      - name: Fetch secrets from OpenBao via Forgejo OIDC
-        run: |
-          OIDC_TOKEN=$(curl -sf \
-            -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=openbao" | jq -r '.value')
-
-          BAO_TOKEN=$(curl -sf --request POST \
-            --header "Content-Type: application/json" \
-            --data "{\"jwt\":\"$OIDC_TOKEN\",\"role\":\"ci-apply\"}" \
-            http://192.168.1.210:8200/v1/auth/jwt/login | jq -r '.auth.client_token')
-
-          SECRETS=$(curl -sf \
-            --header "X-Vault-Token: $BAO_TOKEN" \
-            http://192.168.1.210:8200/v1/secret/data/homelab/ci | jq -r '.data.data')
-
-          PROXMOX_ENDPOINT=$(echo "$SECRETS"    | jq -r '.proxmox_endpoint')
-          PROXMOX_API_TOKEN=$(echo "$SECRETS"   | jq -r '.proxmox_api_token')
-          SSH_PUBLIC_KEY=$(echo "$SECRETS"      | jq -r '.ssh_public_key')
-          SSH_PRIVATE_KEY=$(echo "$SECRETS"     | jq -r '.ssh_private_key')
-          MINIO_ACCESS_KEY=$(echo "$SECRETS"    | jq -r '.minio_access_key')
-          MINIO_SECRET_KEY=$(echo "$SECRETS"    | jq -r '.minio_secret_key')
-
-          echo "::add-mask::$PROXMOX_API_TOKEN"
-          echo "::add-mask::$SSH_PRIVATE_KEY"
-          echo "::add-mask::$MINIO_ACCESS_KEY"
-          echo "::add-mask::$MINIO_SECRET_KEY"
-
-          {
-            echo "TF_VAR_proxmox_endpoint=$PROXMOX_ENDPOINT"
-            echo "TF_VAR_proxmox_api_token=$PROXMOX_API_TOKEN"
-            echo "TF_VAR_ssh_public_key=$SSH_PUBLIC_KEY"
-            echo "AWS_ACCESS_KEY_ID=$MINIO_ACCESS_KEY"
-            echo "AWS_SECRET_ACCESS_KEY=$MINIO_SECRET_KEY"
-            printf 'TF_VAR_ssh_private_key<<__EOF__\n%s\n__EOF__\n' "$SSH_PRIVATE_KEY"
-          } >> $GITHUB_ENV
+      - uses: ./.forgejo/actions/fetch-openbao-secrets
+        with:
+          role: ci-apply
 
       - name: tofu init
         working-directory: opentofu/stacks/k3s
