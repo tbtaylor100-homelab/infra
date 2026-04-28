@@ -1,4 +1,4 @@
-# CI: secrets injected via Forgejo OIDC → OpenBao JWT auth (MAH-70)
+# CI: secrets injected via Forgejo OIDC → OpenBao JWT auth (MAH-70, composite action MAH-70/PR-42)
 terraform {
   required_providers {
     proxmox = {
