@@ -1,5 +1,6 @@
 {
   "mode": "yolo",
+  "branching_strategy": "phase",
   "granularity": "standard",
   "parallelization": true,
   "commit_docs": true,
