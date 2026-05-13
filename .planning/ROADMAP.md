@@ -81,9 +81,21 @@ Plans:
 3. Test search in Stremio for known WEB-DL/YTS/AMZN-tagged release does not display filtered-out streams; `.planning/runbooks/validate-filter.md` documents the test procedure
 4. `homelab-knowledge` ADR records the decision, problem statement (RD May 2026 blocks), alternatives (Comet, ElfHosted), key constraints (SECRET_KEY immutability, intranet-only), and rationale
 
-**Plans:** TBD
+**Plans:** 4 plans
 
-**UI hint**: yes
+Plans:
+
+**Wave 1** *(parallel — all independent)*
+- [ ] 03-01-PLAN.md — Write homelab-knowledge/runbooks/setup-aiostreams.md: RD credential verification, Torrentio addon install, regex filter activation (CONF-01)
+- [ ] 03-02-PLAN.md — Write .planning/runbooks/validate-filter.md: Stremio UI-only filter validation procedure with pass/fail criteria (CONF-02)
+- [ ] 03-03-PLAN.md — Write homelab-knowledge/adr/ADR-017-aiostreams-stremio-filtering.md: deployment decision, May 2026 RD blocking, alternatives (Comet, ElfHosted, provider switch), consequences (DOC-01)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 03-04-PLAN.md — Commit homelab-knowledge artifacts + push to Forgejo; commit infra .planning/runbooks/; operator checkpoint: follow setup runbook + confirm WEB-DL filtered in Stremio (CONF-01, CONF-02, DOC-01)
+
+Cross-cutting constraints:
+- homelab-knowledge is a separate git repo — Wave 2 Plan 04 must commit and push to `ssh://git@192.168.1.50:2222/tbtaylor100/homelab-knowledge.git` independently from the infra repo push
+- Phase 2 (AIOStreams pod) must be running at http://192.168.1.205:3000 before Wave 2 operator checkpoint can succeed
 
 ---
 
@@ -92,8 +104,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Secrets & Prerequisites | 3/3 | Complete | 2026-05-13 |
-| 2. Kubernetes Manifests | 0/3 | Not started | — |
-| 3. Configuration & Documentation | 0/4 | Not started | — |
+| 2. Kubernetes Manifests | 0/3 | Planned | — |
+| 3. Configuration & Documentation | 0/4 | Planned | — |
 
 ---
 
@@ -124,3 +136,4 @@ Plans:
 *Roadmap created: 2026-05-11*
 *Phase 1 planned: 2026-05-12*
 *Phase 2 planned: 2026-05-12*
+*Phase 3 planned: 2026-05-13*
