@@ -62,7 +62,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Create namespace.yaml, configmap.yaml, external-secret.yaml (Wave 1)
 - [x] 02-02-PLAN.md — Create deployment.yaml (Deployment + PVC + Service) and argocd/apps/aiostreams.yaml (Wave 1, parallel)
-- [ ] 02-03-PLAN.md — Pre-flight checks, git commit + push, ArgoCD sync verification, LAN health check (Wave 2)
+- [x] 02-03-PLAN.md — Pre-flight checks, git commit + push, ArgoCD sync verification, LAN health check (Wave 2)
 
 ---
 
