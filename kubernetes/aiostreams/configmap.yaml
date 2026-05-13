@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aiostreams-config
+  namespace: aiostreams
+data:
+  WHITELISTED_REGEX_PATTERNS: '["/(?:WEB-DL|AMZN|DSNP|YTS|RARBG|EZTV)/i"]'
+  REGEX_FILTER_ACCESS: "all"
+  PORT: "3000"

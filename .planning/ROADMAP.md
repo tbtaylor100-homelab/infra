@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Secrets & Prerequisites** — Extend OpenBao policy, generate SECRET_KEY, store RD credentials, document runbook
+- [x] **Phase 1: Secrets & Prerequisites** — Extend OpenBao policy, generate SECRET_KEY, store RD credentials, document runbook
 - [ ] **Phase 2: Kubernetes Manifests** — Deploy namespace, ExternalSecret, Deployment, Service, PVC, and ArgoCD Application
 - [ ] **Phase 3: Configuration & Documentation** — Post-deploy UI setup, filter validation procedure, architectural decision record
 
@@ -37,7 +37,7 @@
 Plans:
 - [x] 01-01-PLAN.md — Author and commit eso-policy.hcl with both policy paths (infra repo)
 - [x] 01-02-PLAN.md — Author and commit AIOStreams provisioning runbook (homelab-knowledge repo)
-- [ ] 01-03-PLAN.md — Apply eso-policy and provision secrets against live OpenBao (operator checkpoint)
+- [x] 01-03-PLAN.md — Apply eso-policy and provision secrets against live OpenBao (operator checkpoint)
 
 ---
 
@@ -53,11 +53,16 @@ Plans:
 
 1. `kubectl get namespace aiostreams` returns status Active
 2. `kubectl get deployment -n aiostreams aiostreams` shows 1/1 Ready replicas with no restarts
-3. `curl -s http://<metallb-ip>:3000/api/v1/status` from a LAN device (not control plane) returns HTTP 200 with valid JSON
+3. `curl -s http://192.168.1.205:3000/api/v1/status` from a LAN device (not control plane) returns HTTP 200 with valid JSON
 4. `ArgoCD Applications` UI shows `argocd/apps/aiostreams.yaml` synced and healthy (no OutOfSync conditions)
 5. PVC `aiostreams-sqlite` is Bound with 10Gi available and mounted at `/app/data` in the pod
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [x] 02-01-PLAN.md — Create namespace.yaml, configmap.yaml, external-secret.yaml (Wave 1)
+- [x] 02-02-PLAN.md — Create deployment.yaml (Deployment + PVC + Service) and argocd/apps/aiostreams.yaml (Wave 1, parallel)
+- [ ] 02-03-PLAN.md — Pre-flight checks, git commit + push, ArgoCD sync verification, LAN health check (Wave 2)
 
 ---
 
@@ -86,8 +91,8 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Secrets & Prerequisites | 2/3 | In progress | — |
-| 2. Kubernetes Manifests | 0/5 | Not started | — |
+| 1. Secrets & Prerequisites | 3/3 | Complete | 2026-05-13 |
+| 2. Kubernetes Manifests | 0/3 | Not started | — |
 | 3. Configuration & Documentation | 0/4 | Not started | — |
 
 ---
@@ -118,3 +123,4 @@ Plans:
 
 *Roadmap created: 2026-05-11*
 *Phase 1 planned: 2026-05-12*
+*Phase 2 planned: 2026-05-12*
