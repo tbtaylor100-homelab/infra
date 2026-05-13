@@ -12,16 +12,15 @@ Click a result in Stremio and it plays — no "infringing file" dead links, no p
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] AIOStreams deployed as a k8s workload managed by ArgoCD, matching existing infra conventions — *Validated in Phase 2*
+- [x] Real-Debrid API key stored in OpenBao at `secret/aiostreams/production`, synced to k8s via ESO ExternalSecret — *Validated in Phase 2*
+- [x] Regex filter pre-configured via `WHITELISTED_REGEX_PATTERNS` to exclude known RD-blocked release tags — *Validated in Phase 2*
+- [x] `REGEX_FILTER_ACCESS=all` set so the filter is available without per-user trust configuration — *Validated in Phase 2*
+- [x] Service exposed on the intranet via MetalLB LoadBalancer (no external access) — *Validated in Phase 2*
+- [x] OpenBao eso-policy extended to cover `secret/data/aiostreams/*` — *Validated in Phase 1*
 
 ### Active
 
-- [ ] AIOStreams deployed as a k8s workload managed by ArgoCD, matching existing infra conventions
-- [ ] Real-Debrid API key stored in OpenBao at `secret/aiostreams/production`, synced to k8s via ESO ExternalSecret
-- [ ] Regex filter pre-configured via `WHITELISTED_REGEX_PATTERNS` to exclude known RD-blocked release tags
-- [ ] `REGEX_FILTER_ACCESS=all` set so the filter is available without per-user trust configuration
-- [ ] Service exposed on the intranet via MetalLB LoadBalancer (no external access)
-- [ ] OpenBao eso-policy extended to cover `secret/data/aiostreams/*`
 - [ ] Post-deploy UI configuration documented as a runbook (add Torrentio source, configure RD credentials, activate filter)
 - [ ] Architectural decision documented in homelab-knowledge as an ADR
 
@@ -53,11 +52,12 @@ Click a result in Stremio and it plays — no "infringing file" dead links, no p
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| AIOStreams over Comet | Both support RD and filtering; AIOStreams is more actively maintained as an addon aggregator | — Pending |
-| MetalLB LoadBalancer over Traefik IngressRoute | Consistent with existing mcp-servers pattern; hostname migration is future platform-wide work | — Pending |
-| `secret/aiostreams/production` OpenBao path | Matches naming convention established in the provision-app-secrets runbook | — Pending |
-| SQLite PVC over PostgreSQL | Single-user instance; no existing Postgres to point at; PVC is lowest-friction option | — Pending |
-| Intranet-only exposure | Stremio is used only on LAN devices; no reason to expose AIOStreams externally | — Pending |
+| AIOStreams over Comet | Both support RD and filtering; AIOStreams is more actively maintained as an addon aggregator | Confirmed — Phase 2 |
+| MetalLB LoadBalancer over Traefik IngressRoute | Consistent with existing mcp-servers pattern; hostname migration is future platform-wide work | Confirmed — Phase 2 |
+| `secret/aiostreams/production` OpenBao path | Matches naming convention established in the provision-app-secrets runbook | Confirmed — Phase 1 |
+| SQLite PVC over PostgreSQL | Single-user instance; no existing Postgres to point at; PVC is lowest-friction option | Confirmed — Phase 2 |
+| Intranet-only exposure | Stremio is used only on LAN devices; no reason to expose AIOStreams externally | Confirmed — Phase 2 |
+| `ANIME_DB_LEVEL_OF_DETAIL=none` | v2.29.5 loads 42K+ anime metadata entries at startup regardless of anime usage; disabling avoids OOMKill within 256Mi limit | Confirmed — Phase 2 |
 
 ## Evolution
 
@@ -77,4 +77,6 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-11 after initialization*
+**Current State:** Phase 2 complete — AIOStreams pod running, ArgoCD-managed, responding HTTP 200 on `192.168.1.205:3000`. Phase 3 remaining: UI setup runbook + ADR.
+
+*Last updated: 2026-05-13 after Phase 2 completion*
