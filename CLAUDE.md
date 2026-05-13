@@ -11,8 +11,8 @@ Planning: `.planning/` | State: `.planning/STATE.md` | Roadmap: `.planning/ROADM
 
 This project uses the Get Shit Done (GSD) workflow.
 
-**Current phase:** Phase 1 — Secrets & Prerequisites
-**Next command:** `/gsd-plan-phase 1`
+**Current phase:** Phase 1 — Secrets & Prerequisites (Wave 1 complete, Wave 2 pending)
+**Next command:** Resume `/gsd-execute-phase 1` after running `bao` commands from the provisioning runbook
 
 **Workflow enforcement:**
 - Do not skip phases or execute work outside the active plan
@@ -47,6 +47,18 @@ OpenBao at `http://192.168.1.210:8200`, path convention `secret/<app>/<env>`.
 - `WHITELISTED_REGEX_PATTERNS` must be a valid JSON array string
 - `REGEX_FILTER_ACCESS=all` required for filter to be available without per-user trust config
 
-## ESO Policy Note
+## Phase 1 Status (Wave 1 complete — 2026-05-12)
 
-The current `eso-policy` covers only `secret/data/homelab/ci`. Phase 1 must extend it to include `secret/data/aiostreams/*` before Phase 2 manifests will sync.
+Wave 1 artifacts committed:
+- `kubernetes/external-secrets/eso-policy.hcl` — policy file with both paths (homelab/ci + aiostreams/*)
+- `homelab-knowledge/runbooks/provision-aiostreams-secrets.md` — full provisioning runbook
+
+Wave 2 (plan 01-03) requires running the runbook manually with `bao` or `vault` CLI:
+1. `bao policy write -address=http://192.168.1.210:8200 eso-policy kubernetes/external-secrets/eso-policy.hcl`
+2. `openssl rand -hex 32` → capture as SECRET_KEY
+3. `bao kv put -address=http://192.168.1.210:8200 secret/aiostreams/production SECRET_KEY="$SECRET_KEY" FORCED_SERVICE_CREDENTIALS="realdebrid.apiKey=<key>"`
+4. Verify with `bao kv get -address=http://192.168.1.210:8200 secret/aiostreams/production`
+
+Install bao/vault CLI on Mac: `brew install openbao` or `brew install vault`
+
+After running the bao commands, resume in Claude Code and tell it "secrets provisioned" to complete Phase 1.

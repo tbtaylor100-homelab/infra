@@ -29,10 +29,15 @@
 
 1. `bao policy show eso-policy` output includes `path "secret/data/aiostreams/*"` with read permissions
 2. `bao kv get secret/aiostreams/production` returns a non-empty secret with `SECRET_KEY` (64-char hex) and `FORCED_SERVICE_CREDENTIALS` fields
-3. Runbook at `.planning/runbooks/provision-aiostreams-secrets.md` documents exact `bao kv put` and `openssl rand -hex 32` commands
+3. Runbook at `homelab-knowledge/runbooks/provision-aiostreams-secrets.md` documents exact `bao kv put` and `openssl rand -hex 32` commands
 4. OpenBao audit log confirms policy update and secret creation within same session
 
-**Plans:** TBD
+**Plans:** 3 plans
+
+Plans:
+- [x] 01-01-PLAN.md — Author and commit eso-policy.hcl with both policy paths (infra repo)
+- [x] 01-02-PLAN.md — Author and commit AIOStreams provisioning runbook (homelab-knowledge repo)
+- [ ] 01-03-PLAN.md — Apply eso-policy and provision secrets against live OpenBao (operator checkpoint)
 
 ---
 
@@ -81,7 +86,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Secrets & Prerequisites | 0/3 | Not started | — |
+| 1. Secrets & Prerequisites | 2/3 | In progress | — |
 | 2. Kubernetes Manifests | 0/5 | Not started | — |
 | 3. Configuration & Documentation | 0/4 | Not started | — |
 
@@ -112,3 +117,4 @@
 ---
 
 *Roadmap created: 2026-05-11*
+*Phase 1 planned: 2026-05-12*

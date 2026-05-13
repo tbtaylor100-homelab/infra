@@ -2,7 +2,7 @@
 
 **Project:** AIOStreams: Stremio Filtering Layer  
 **Initialized:** 2026-05-11  
-**Status:** Roadmap complete, planning Phase 1
+**Status:** Phase 1 planned — ready to execute
 
 ---
 
@@ -20,15 +20,15 @@
 
 **Milestone:** 1.0 (AIOStreams v2.29.5 self-hosted on k3s)
 
-**Phase:** 1 — Secrets & Prerequisites (not started)
+**Phase:** 1 — Secrets & Prerequisites (in progress)
 
-**Plan:** — (awaiting planning)
+**Plan:** 3 plans in 2 waves (01-01, 01-02 parallel Wave 1; 01-03 Wave 2 manual)
 
-**Progress:** Phase 0/3 complete
+**Progress:** Phase 2/3 complete
 
 **Visual Progress:**
 ```
-Phase 1: [                    ] 0/3 plans
+Phase 1: [||||||              ] 2/3 plans
 Phase 2: [                    ] 0/5 plans  
 Phase 3: [                    ] 0/4 plans
 ```
@@ -71,6 +71,16 @@ Phase 3: [                    ] 0/4 plans
    - Phase 2: Pod healthy, `/api/v1/status` responds from LAN, ArgoCD synced
    - Phase 3: Filter blocks WEB-DL/YTS/AMZN in Stremio, ADR recorded
 
+4. **ESO policy capability scope (01-01):** Use `["read"]` only (not `["read", "list"]`) for aiostreams/* — matches homelab/ci convention and principle of least privilege. ESO fetches a specific path, not a directory listing.
+
+5. **Policy HCL co-location (01-01):** Store HCL policy file alongside ClusterSecretStore in `kubernetes/external-secrets/` for discoverability and ESO config co-location.
+
+6. **Runbook location (01-02):** Runbook lives in homelab-knowledge (not .planning/) as a durable operational document per D-04. Follows add-credential.md format.
+
+7. **SECRET_KEY immutability warning placement (01-02):** Immutability blockquote placed immediately after openssl rand command, before bao kv put — per D-05 and T-02-02 threat mitigation.
+
+8. **FORCED_SERVICE_CREDENTIALS format (01-02):** Full string `realdebrid.apiKey=<key>` documented (not just the key value) to match AIOStreams .env.sample format.
+
 ### Technical Constraints
 
 - **eso-policy scope:** Existing role scoped to `secret/data/homelab/ci` — Phase 1 must extend to `secret/data/aiostreams/*`
@@ -91,10 +101,10 @@ None. Phase 1 can start immediately.
 
 ## Session Continuity
 
-**Last session:** Roadmap creation (2026-05-11)  
-**Context loss risk:** Low — ROADMAP.md, REQUIREMENTS.md, and this STATE.md capture full project state
+**Last session:** Phase 1 execution — Plan 01-02 complete (2026-05-12)
+**Context loss risk:** Low — ROADMAP.md, REQUIREMENTS.md, STATE.md, and phase plans capture full project state
 
-**Next action:** `/gsd-plan-phase 1` to decompose Phase 1 into executable plans
+**Next action:** Wave 2 — Plan 01-03 (operator checkpoint: apply eso-policy and provision secrets against live OpenBao)
 
 ---
 

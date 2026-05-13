@@ -80,10 +80,7 @@
           X-Vault-Token: "{{ openbao_root_token }}"
         body_format: json
         body:
-          policy: |
-            path "secret/data/homelab/ci" {
-              capabilities = ["read"]
-            }
+          policy: "{{ lookup('file', playbook_dir + '/../../kubernetes/external-secrets/eso-policy.hcl') }}"
         status_code: [200, 204]
 
     - name: Create Kubernetes auth role for ESO
