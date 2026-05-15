@@ -36,7 +36,7 @@ provider "proxmox" {
 }
 
 module "k3s_vm" {
-  source = "../../modules/proxmox-vm"
+  source = "../../../opentofu/modules/proxmox-vm"
 
   vm_id        = 110
   name         = "k3s-control-01"

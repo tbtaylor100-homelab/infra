@@ -41,7 +41,7 @@ locals {
 }
 
 module "uptime_kuma_vm" {
-  source = "../../modules/proxmox-vm"
+  source = "../../../opentofu/modules/proxmox-vm"
 
   vm_id        = 111
   name         = "uptime-kuma-01"

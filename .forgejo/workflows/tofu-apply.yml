@@ -3,14 +3,16 @@ name: OpenTofu Apply
 on:
   pull_request:
     paths:
-      - 'opentofu/**'
+      - 'vms/*/provision/**'
+      - 'opentofu/modules/**'
       - '.forgejo/workflows/tofu-apply.yml'
       - '.forgejo/actions/fetch-openbao-secrets/**'
   push:
     branches:
       - main
     paths:
-      - 'opentofu/**'
+      - 'vms/*/provision/**'
+      - 'opentofu/modules/**'
 
 jobs:
   validate:
@@ -31,14 +33,14 @@ jobs:
           role: ci-plan
 
       - name: tofu init
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: |
           tofu init \
             -backend-config="access_key=${AWS_ACCESS_KEY_ID}" \
             -backend-config="secret_key=${AWS_SECRET_ACCESS_KEY}"
 
       - name: tofu plan
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: tofu plan -no-color
 
   apply:
@@ -59,14 +61,14 @@ jobs:
           role: ci-apply
 
       - name: tofu init
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: |
           tofu init \
             -backend-config="access_key=${AWS_ACCESS_KEY_ID}" \
             -backend-config="secret_key=${AWS_SECRET_ACCESS_KEY}"
 
       - name: tofu apply
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: tofu apply -auto-approve -no-color
 
       - name: Verify k3s node is Ready

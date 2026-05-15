@@ -3,7 +3,8 @@ name: OpenTofu Plan
 on:
   pull_request:
     paths:
-      - 'opentofu/**'
+      - 'vms/*/provision/**'
+      - 'opentofu/modules/**'
       - '.forgejo/actions/fetch-openbao-secrets/**'
 
 jobs:
@@ -24,15 +25,15 @@ jobs:
           role: ci-plan
 
       - name: tofu fmt check
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: tofu fmt -check -recursive
 
       - name: tofu validate
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: tofu init -backend=false && tofu validate
 
       - name: tofu plan
-        working-directory: opentofu/stacks/k3s
+        working-directory: vms/k3s-control-01/provision
         run: |
           tofu init \
             -backend-config="access_key=${AWS_ACCESS_KEY_ID}" \
