@@ -1,0 +1,7 @@
+---
+- name: Configure K3s node
+  hosts: k3s
+  roles:
+    - base
+    - k3s
+    - argocd

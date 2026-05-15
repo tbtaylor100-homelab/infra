@@ -10,3 +10,7 @@ path "secret/data/homelab/ci" {
 path "secret/data/aiostreams/*" {
   capabilities = ["read"]
 }
+
+path "secret/data/cloudflare/*" {
+  capabilities = ["read"]
+}

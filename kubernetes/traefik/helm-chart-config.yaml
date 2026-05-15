@@ -1,0 +1,19 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    service:
+      annotations:
+        metallb.universe.tf/loadBalancerIPs: "192.168.1.206"
+    ports:
+      web:
+        redirectTo:
+          port: websecure
+    providers:
+      kubernetesCRD:
+        allowCrossNamespace: true
+      kubernetesIngress:
+        enabled: false

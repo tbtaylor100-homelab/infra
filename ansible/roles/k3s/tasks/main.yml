@@ -5,12 +5,28 @@
     dest: /tmp/k3s-install.sh
     mode: '0755'
 
-- name: Install K3s (disable Traefik — we choose our own ingress later)
+- name: Check if K3s binary exists
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Check if Traefik is disabled in K3s service
+  ansible.builtin.command: grep -q 'traefik' /etc/systemd/system/k3s.service
+  register: k3s_traefik_disabled_check
+  failed_when: false
+  changed_when: false
+  when: k3s_binary.stat.exists
+  become: true
+
+- name: Install or reconfigure K3s with Traefik enabled
   ansible.builtin.command: /tmp/k3s-install.sh
   environment:
-    INSTALL_K3S_EXEC: "server --disable traefik"
-  args:
-    creates: /usr/local/bin/k3s
+    INSTALL_K3S_EXEC: "server"
+    INSTALL_K3S_VERSION: "v1.34.5+k3s1"
+  when: >
+    not k3s_binary.stat.exists or
+    (k3s_traefik_disabled_check.rc is defined and k3s_traefik_disabled_check.rc == 0)
+  changed_when: true
   become: true
 
 - name: Wait for K3s node to be Ready

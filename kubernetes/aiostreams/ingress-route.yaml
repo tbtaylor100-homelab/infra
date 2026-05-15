@@ -1,0 +1,18 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: aiostreams
+  namespace: aiostreams
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`aiostreams.screamingmorphs.com`)
+      kind: Rule
+      services:
+        - name: aiostreams
+          port: 3000
+  tls:
+    secretName: aiostreams-tls
