@@ -1,19 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: screaming-morphs-staging
+  name: screaming-morphs-production-app
   # NOTE: ArgoCD applications must be in the argocd namespace
   namespace: argocd
 spec:
   project: default
   source:
-    # Custom apps manage namepsace + ExternalSecret in infra repo, not app repo
-    repoURL: http://forgejo.local:3000/tbtaylor100/infra.git
+    repoURL: http://forgejo.local:3000/tbtaylor100/screaming_morphs.git
     targetRevision: main
-    path: kubernetes/screaming-morphs/staging
+    path: helm/screaming-morphs
+    helm:
+      valueFiles:
+        - values/production.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: screaming-morphs-staging
+    namespace: screaming-morphs-production
   syncPolicy:
     automated:
       prune: true
