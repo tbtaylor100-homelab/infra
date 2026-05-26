@@ -7,9 +7,10 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: http://forgejo.local:3000/tbtaylor100/screaming-morphs.git
+    # Custom apps manage namepsace + ExternalSecret in infra repo, not app repo
+    repoURL: http://forgejo.local:3000/tbtaylor100/infra.git
     targetRevision: main
-    path: kubernetes/screaming-morphs-production
+    path: kubernetes/screaming-morphs/production
   destination:
     server: https://kubernetes.default.svc
     namespace: screaming-morphs-production
@@ -17,5 +18,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    SyncOptions:
-      - CreateNamespace=true

@@ -7,11 +7,10 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: http://forgejo.local:3000/tbtaylor100/screaming-morphs.git
+    # Custom apps manage namepsace + ExternalSecret in infra repo, not app repo
+    repoURL: http://forgejo.local:3000/tbtaylor100/infra.git
     targetRevision: main
-    # TODO: this path is incorrect, it's a placeholder for now.
-    # It must point to the helm charts for the respective env.
-    path: kubernetes/screaming-morphs-staging
+    path: kubernetes/screaming-morphs/staging
   destination:
     server: https://kubernetes.default.svc
     namespace: screaming-morphs-staging
@@ -19,5 +18,3 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
