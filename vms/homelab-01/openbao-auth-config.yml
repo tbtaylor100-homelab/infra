@@ -121,6 +121,27 @@
           ttl: "5m"
         status_code: [200, 204]
 
+    - name: Create JWT role ci-registry (any branch, any tbtaylor100 repo)
+      ansible.builtin.uri:
+        url: "{{ openbao_addr }}/v1/auth/jwt/role/ci-registry"
+        method: POST
+        headers:
+          X-Vault-Token: "{{ openbao_root_token }}"
+        body_format: json
+        body:
+          role_type: jwt
+          bound_audiences:
+            - openbao
+          bound_claims_type: glob
+          bound_claims:
+            repository:
+              - "tbtaylor100/*"
+          user_claim: sub
+          policies:
+            - ci-reader
+          ttl: "5m"
+        status_code: [200, 204]
+
     - name: Create JWT role ci-apply (main branch only)
       ansible.builtin.uri:
         url: "{{ openbao_addr }}/v1/auth/jwt/role/ci-apply"
