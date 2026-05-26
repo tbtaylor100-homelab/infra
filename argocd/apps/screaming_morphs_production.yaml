@@ -2,7 +2,8 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: screaming-morphs-production
-  namespace: screaming-morphs-production
+    # NOTE: ArgoCD applications must be in the argocd namespace
+  namespace: argocd
 spec:
   project: default
   source:
@@ -16,5 +17,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
+    SyncOptions:
       - CreateNamespace=true
