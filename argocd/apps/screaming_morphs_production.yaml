@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: screaming-morphs-production
+  namespace: screaming-morphs-production
+spec:
+  project: default
+  source:
+    repoURL: http://forgejo.local:3000/tbtaylor100/screaming-morphs.git
+    targetRevision: main
+    path: kubernetes/screaming-morphs-production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: screaming-morphs-production
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
