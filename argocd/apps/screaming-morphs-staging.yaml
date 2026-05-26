@@ -2,12 +2,15 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: screaming-morphs-staging
+  # NOTE: ArgoCD applications must be in the argocd namespace
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: http://forgejo.local:3000/tbtaylor100/screaming-morphs.git
     targetRevision: main
+    # TODO: this path is incorrect, it's a placeholder for now.
+    # It must point to the helm charts for the respective env.
     path: kubernetes/screaming-morphs-staging
   destination:
     server: https://kubernetes.default.svc
