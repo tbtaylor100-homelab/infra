@@ -1,21 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: aiostreams
+  name: screaming-morphs-staging
   # NOTE: ArgoCD applications must be in the argocd namespace
   namespace: argocd
 spec:
   project: default
   source:
+    # Custom apps manage namepsace + ExternalSecret in infra repo, not app repo
     repoURL: http://forgejo.local:3000/tbtaylor100/infra.git
     targetRevision: main
-    path: kubernetes/aiostreams
+    path: kubernetes/screaming-morphs/staging
   destination:
     server: https://kubernetes.default.svc
-    namespace: aiostreams
+    namespace: screaming-morphs-staging
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
