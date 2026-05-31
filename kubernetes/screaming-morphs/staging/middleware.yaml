@@ -1,0 +1,12 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: screaming-morphs-staging-allowlist
+  namespace: screaming-morphs-staging
+  # Defense-in-depth: staging.screamingmorphs.com resolves to 192.168.1.206 (private IP),
+  # which is unreachable from the public internet at the network layer. This allowlist
+  # ensures staging stays LAN-only even if port 443 is ever accidentally forwarded on the router.
+spec:
+  ipAllowList:
+    sourceRange:
+      - 192.168.1.0/24
