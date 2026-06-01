@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: screaming-morphs-production
+data:
+  config.yaml: |
+    tunnel: cd5d3a7b-a12c-470f-8669-ac7793342bd7
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    ingress:
+      - hostname: screamingmorphs.com
+        service: http://screaming-morphs-production-app:3000
+      - service: http_status:404
